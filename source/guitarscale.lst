@@ -1,0 +1,2047 @@
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 1
+
+
+
+
+
+       MCS-51 Family Macro Assembler   A S E M - 5 1   V 1.3
+       =====================================================
+
+
+
+	Source File:	D:\Firdaus-05118\guitar project heroes\dokumentasi proyek guitar scaling\source\guitarscale.asm
+	Object File:	D:\Firdaus-05118\guitar project heroes\dokumentasi proyek guitar scaling\source\guitarscale.hex
+	List File:	D:\Firdaus-05118\guitar project heroes\dokumentasi proyek guitar scaling\source\guitarscale.lst
+
+
+
+ Line  I  Addr  Code            Source
+
+    1:		N      0025	tg801		equ	25H
+    2:		N      0026	tg802		equ	26H
+    3:		N      0027	tg803		equ	27H
+    4:		N      0028	tg1001		equ	28H
+    5:		N      0029	tg1002		equ	29H
+    6:		N      0030	tg1003		equ	30H
+    7:		N      0031	tg1201		equ	31H
+    8:		N      0032	tg1202		equ	32H
+    9:		N      0033	tg1203		equ	33H
+   10:		N      0034	tg1401		equ	34H
+   11:		N      0035	tg1402		equ	35H
+   12:		N      0036	tg1403		equ	36H
+   13:		N      0037	del1		equ	37H
+   14:		N      0038	del2		equ	38H
+   15:		N      0039	del3		equ	39H
+   16:		B	 B0	pinRS 		bit 	P3.0
+   17:		B	 B1	pinE		bit 	P3.1
+   18:
+   19:		N      0000	org 00h
+   20:	  0000	12 00 31	call init_lcd
+   21:				;=============inisial awal==============================
+   22:	  0003			start:
+   23:	  0003	78 00		       	mov r0,#0
+   24:	  0005	7A 01		       	mov r2,#1
+   25:	  0007	7B 01		       	mov r3,#1
+   26:	  0009	7D 00		       	mov r5,#0
+   27:	  000B	90 0D 57	       	mov dptr,#word  ;DPTR = [ address word ]
+   28:	  000E	7C 10		       	mov r4,#16      ;r4=16,number character to be display
+   29:	  0010	79 80		       	mov r1,#80h     ;R1=80h,address DDRAM start position
+   30:	  0012	12 00 46	       	call write_inst
+   31:	  0015	12 00 27	       	call write
+   32:	  0018	90 0D 67	       	mov dptr,#word2
+   33:	  001B	7C 10		       	mov r4,#16
+   34:	  001D	79 C0		       	mov r1,#0c0h
+   35:	  001F	12 00 46	       	call write_inst
+   36:	  0022	12 00 27	       	call write
+   37:	  0025	01 CF		       	ajmp tekan
+   38:	  0027			write:
+   39:	  0027	E4			clr a           ; A = 0
+   40:	  0028	93		       	movc a,@a+dptr  ; A = [A+ DPTR]
+   41:	  0029	F9		       	mov r1,A        ; R1 = A
+   42:	  002A	A3		       	inc dptr        ; DPTR = DPTR +1
+   43:	  002B	12 00 52	       	call write_data
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 2
+
+
+
+ Line  I  Addr  Code            Source
+
+   44:	  002E	DC F7		       	djnz r4,write	; r4 = r4-1,
+   45:	  0030	22		       	ret
+   46:	  0031			init_lcd:
+   47:	  0031	79 01		    	mov r1,#00000001b 	;Display clear
+   48:	  0033	12 00 46	    	call write_inst
+   49:	  0036	79 38		    	mov r1,#00111000b 	;Function set, Data 8 bit,2 line font 5x7
+   50:	  0038	12 00 46	    	call write_inst
+   51:	  003B	79 0C		    	mov r1,#00001100b 	;Display on, cursor off,cursor blink off
+   52:	  003D	12 00 46	    	call write_inst
+   53:	  0040	79 06		    	mov r1,#00000110b 	;Entry mode, Set increment
+   54:	  0042	12 00 46	    	call write_inst
+   55:	  0045	22		    	ret
+   56:	  0046			write_inst:
+   57:	  0046	C2 B0		    	clr pinRS  	; RS = P3.0 = 0, write mode instruction
+   58:	  0048	89 90		    	mov P1,R1 	; D7 s/d D0 = P0 = R1
+   59:	  004A	D2 B1		    	setb pinE 	; EN = 1 = P3.1
+   60:	  004C	12 00 5E	    	call delay	; call delay time
+   61:	  004F	C2 B1		    	clr pinE  	; EN = 0 = P3.1
+   62:	  0051	22		    	ret
+   63:	  0052			write_data:
+   64:	  0052	D2 B0		    	setb pinRS 	; RS = P3.0 = 1, write mode data
+   65:	  0054	89 90		    	mov P1,R1 	; D7 s/d D0 = P0 = R1
+   66:	  0056	D2 B1		    	setb pinE 	; EN = 1 = P3.1
+   67:	  0058	12 00 5E	    	call delay	; call delay time
+   68:	  005B	C2 B1		    	clr pinE  	; EN = 0 = P3.1
+   69:	  005D	22		    	ret
+   70:	  005E			delay:
+   71:	  005E	75 39 00			mov del3,#0
+   72:	  0061	75 38 0F	delay1:	mov del2,#0fh
+   73:	  0064	D5 38 FD	       	djnz del2,$
+   74:	  0067	D5 39 F7	       	djnz del3,delay1
+   75:	  006A	22		       	ret
+   76:				;==================== tempo ===============================
+   77:	  006B	30 B6 7B	wait:	jnb p3.6,balik
+   78:	  006E	B8 01 13		cjne r0,#1,tunggu	;delay 0.75 s
+   79:	  0071	75 27 25		mov tg803,#37
+   80:	  0074	75 26 64	wait1:	mov tg802,#100
+   81:	  0077	75 25 64	wait2:	mov tg801,#100
+   82:	  007A	D5 25 FD		djnz tg801, $
+   83:	  007D	D5 26 F7	 	djnz tg802, wait2
+   84:	  0080	D5 27 F1	 	djnz tg803, wait1
+   85:	  0083	22		 	ret
+   86:
+   87:	  0084	30 B6 62	tunggu:	jnb p3.6,balik
+   88:	  0087	B8 02 13		cjne r0,#2,bentar	;delay 0.6 s
+   89:	  008A	75 30 1D		mov tg1003,#29
+   90:	  008D	75 29 66	tunggu1:mov tg1002,#102
+   91:	  0090	75 28 64	tunggu2:mov tg1001,#100
+   92:	  0093	D5 28 FD		djnz tg1001, $
+   93:	  0096	D5 29 F7	 	djnz tg1002, tunggu2
+   94:	  0099	D5 30 F1	 	djnz tg1003, tunggu1
+   95:	  009C	22		 	ret
+   96:
+   97:	  009D	30 B6 49	bentar:	jnb p3.6,balik
+   98:	  00A0	B8 03 13		cjne r0,#3,heula	;delay 0.5 s
+   99:	  00A3	75 33 18		mov tg1203,#24
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 3
+
+
+
+ Line  I  Addr  Code            Source
+
+  100:	  00A6	75 32 66	bentar1:mov tg1202,#102
+  101:	  00A9	75 31 64	bentar2:mov tg1201,#100
+  102:	  00AC	D5 31 FD		djnz tg1201, $
+  103:	  00AF	D5 32 F7	 	djnz tg1202, bentar2
+  104:	  00B2	D5 33 F1	 	djnz tg1203, bentar1
+  105:	  00B5	22		 	ret
+  106:
+  107:	  00B6	30 B6 30	heula:	jnb p3.6,balik
+  108:	  00B9	B8 04 AF		cjne r0,#4,wait		;delay 0.4286 s
+  109:	  00BC	75 36 15		mov tg1403,#21
+  110:	  00BF	75 35 64	heula1:	mov tg1402,#100
+  111:	  00C2	75 34 64	heula2:	mov tg1401,#100
+  112:	  00C5	D5 34 FD		djnz tg1401, $
+  113:	  00C8	D5 35 F7	 	djnz tg1402, heula2
+  114:	  00CB	D5 36 F1	 	djnz tg1403, heula1
+  115:	  00CE	22		 	ret
+  116:				;=====================tekan tombol=============================
+  117:	  00CF			tekan:
+  118:	  00CF	7F 03				mov r7,#3
+  119:	  00D1	30 B3 12			jnb p3.3,rst
+  120:	  00D4	30 B4 0C			jnb p3.4,naik
+  121:	  00D7	30 B5 06			jnb p3.5,temp
+  122:	  00DA	30 B6 16			jnb p3.6,salah
+  123:	  00DD	02 00 CF			ljmp tekan
+  124:	  00E0			temp:
+  125:	  00E0	02 08 59			ljmp tempo
+  126:	  00E3			naik:
+  127:	  00E3	02 07 6D			ljmp up
+  128:	  00E6			rst:
+  129:	  00E6	02 00 03			ljmp start
+  130:	  00E9			balik:
+  131:	  00E9	30 B6 FD			jnb p3.6,$
+  132:	  00EC	11 5E				call delay
+  133:	  00EE	75 A0 FF			mov p2,#255
+  134:	  00F1	80 DC				jmp tekan
+  135:	  00F3			salah:
+  136:	  00F3	30 B6 FD		jnb p3.6,$
+  137:	  00F6	11 5E			call delay
+  138:	  00F8	B8 00 06		cjne r0,#0,salah1
+  139:	  00FB	BD 00 13		cjne r5,#0,salah2
+  140:	  00FE	02 01 1E		jmp salah3
+  141:	  0101	BD 00 38	salah1:	cjne r5,#0,jalan1
+  142:	  0104	90 0F 37		mov dptr,#word_tekan
+  143:	  0107	7C 10		       	mov r4,#16
+  144:	  0109	79 80		       	mov r1,#80h
+  145:	  010B	11 46		       	call write_inst
+  146:	  010D	11 27		       	call write
+  147:	  010F	80 BE		       	jmp tekan
+  148:	  0111	90 0F 47	salah2:	mov dptr,#word_tekan2
+  149:	  0114	7C 10		       	mov r4,#16
+  150:	  0116	79 C0		       	mov r1,#0c0h
+  151:	  0118	11 46		       	call write_inst
+  152:	  011A	11 27		       	call write
+  153:	  011C	80 B1		       	jmp tekan
+  154:	  011E	90 0F 57	salah3:	mov dptr,#word_tekan3
+  155:	  0121	7C 10		       	mov r4,#16
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 4
+
+
+
+ Line  I  Addr  Code            Source
+
+  156:	  0123	79 80		       	mov r1,#80h
+  157:	  0125	11 46		       	call write_inst
+  158:	  0127	11 27		       	call write
+  159:	  0129	90 0F 67	       	mov dptr,#word_tekan4
+  160:	  012C	7C 10		       	mov r4,#16
+  161:	  012E	79 C0		       	mov r1,#0c0h
+  162:	  0130	11 46		       	call write_inst
+  163:	  0132	11 27		       	call write
+  164:	  0134	78 03			mov r0,#3
+  165:	  0136	11 6B			call wait
+  166:	  0138	78 00			mov r0,#0
+  167:	  013A	01 03		       	ajmp start
+  168:
+  169:	  013C			jalan1:
+  170:	  013C	BD 01 1B		cjne r5,#1,jalan2
+  171:	  013F	12 08 9B		call nyala_awal
+  172:	  0142	12 09 E3	aoelian:	call dor1
+  173:	  0145	12 0D 01		call phry2
+  174:	  0148	12 0A 2D		call dor3
+  175:	  014B	12 0D 0D		call phry4
+  176:	  014E	12 0D 32		call phry5
+  177:	  0151	12 0A 93		call dor6
+  178:	  0154	20 B6 EB		jb p3.6,aoelian
+  179:	  0157	02 00 E9		ljmp balik
+  180:	  015A			jalan2:
+  181:	  015A	BD 02 38		cjne r5,#2,jalan3
+  182:	  015D	12 08 9B		call nyala_awal
+  183:	  0160	12 0A D4	arabian:	call ion1
+  184:	  0163	12 0B BC		call loc2
+  185:	  0166	12 0C 7F		call mix3
+  186:	  0169	75 80 10			mov	p0, #00010000b
+  187:	  016C	75 A0 F7			mov	p2, #11110111b
+  188:	  016F	11 6B				call wait
+  189:	  0171	75 80 18			mov	p0, #00011000b
+  190:	  0174	75 A0 F7			mov	p2, #11110111b
+  191:	  0177	11 6B				call wait
+  192:	  0179	75 80 1C			mov	p0, #00011100b
+  193:	  017C	75 A0 F7			mov	p2, #11110111b
+  194:	  017F	11 6B				call wait
+  195:	  0181	75 80 1D			mov	p0, #00011101b
+  196:	  0184	75 A0 F7			mov	p2, #11110111b
+  197:	  0187	11 6B				call wait
+  198:	  0189	12 08 A8		call arabian5
+  199:	  018C	12 0B 72		call ion6
+  200:	  018F	20 B6 CE		jb p3.6,arabian
+  201:	  0192	02 00 E9		ljmp balik
+  202:	  0195			jalan3:
+  203:	  0195	BD 03 42		cjne r5,#3,jalan4
+  204:	  0198	12 08 9B		call nyala_awal
+  205:	  019B	75 80 20	arpmaj:	mov p0, #00100000b
+  206:	  019E	75 A0 FE		mov p2, #11111110b
+  207:	  01A1	11 6B			call wait
+  208:	  01A3	75 80 22		mov p0, #00100010b
+  209:	  01A6	75 A0 FE		mov p2, #11111110b
+  210:	  01A9	11 6B			call wait
+  211:	  01AB	12 08 E1		call arpeggio_minor2
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 5
+
+
+
+ Line  I  Addr  Code            Source
+
+  212:	  01AE	12 08 C4		call arpeggio_major3
+  213:	  01B1	75 80 10			mov	p0, #00010000b
+  214:	  01B4	75 A0 F7			mov	p2, #11110111b
+  215:	  01B7	11 6B				call wait
+  216:	  01B9	75 80 12			mov	p0, #00010010b
+  217:	  01BC	75 A0 F7			mov	p2, #11110111b
+  218:	  01BF	11 6B				call wait
+  219:	  01C1	12 08 FE		call arpeggio_minor5
+  220:	  01C4	75 80 20			mov	p0, #00100000b
+  221:	  01C7	75 A0 DF			mov	p2, #11011111b
+  222:	  01CA	11 6B				call wait
+  223:	  01CC	75 80 22			mov	p0, #00100010b
+  224:	  01CF	75 A0 DF			mov	p2, #11011111b
+  225:	  01D2	11 6B				call wait
+  226:	  01D4	20 B6 C4		jb p3.6,arpmaj
+  227:	  01D7	02 00 E9		ljmp balik
+  228:	  01DA			jalan4:
+  229:	  01DA	BD 04 30		cjne r5,#4,jalan5
+  230:	  01DD	12 08 9B		call nyala_awal
+  231:	  01E0	12 08 CE	arpmin:	call arpeggio_minor1
+  232:	  01E3	12 08 E1		call arpeggio_minor2
+  233:	  01E6	12 08 C4		call arpeggio_major3
+  234:	  01E9	75 80 09		mov	p0, #00001001b
+  235:	  01EC	75 A0 FB		mov	p2, #11111011b
+  236:	  01EF	11 6B			call wait
+  237:	  01F1	75 80 20			mov	p0, #00100000b
+  238:	  01F4	75 A0 F7			mov	p2, #11110111b
+  239:	  01F7	11 6B				call wait
+  240:	  01F9	75 80 22			mov	p0, #00100010b
+  241:	  01FC	75 A0 F7			mov	p2, #11110111b
+  242:	  01FF	11 6B				call wait
+  243:	  0201	12 08 FE		call arpeggio_minor5
+  244:	  0204	12 09 11		call arpeggio_minor6
+  245:	  0207	20 B6 D6		jb p3.6,arpmin
+  246:	  020A	02 00 E9		ljmp balik
+  247:	  020D			jalan5:
+  248:	  020D	BD 05 6F		cjne r5,#5,jalan6
+  249:	  0210	12 08 9B		call nyala_awal
+  250:	  0213			augmented:
+  251:	  0213	75 80 20			mov	p0, #00100000b
+  252:	  0216	75 A0 FE			mov	p2, #11111110b
+  253:	  0219	11 6B				call wait
+  254:	  021B	75 80 24			mov	p0, #00100100b
+  255:	  021E	75 A0 FE			mov	p2, #11111110b
+  256:	  0221	11 6B				call wait
+  257:	  0223	75 80 26			mov	p0, #00100110b
+  258:	  0226	75 A0 FE			mov	p2, #11111110b
+  259:	  0229	11 6B				call wait
+  260:
+  261:	  022B	75 80 08			mov	p0, #00001000b
+  262:	  022E	75 A0 FD			mov	p2, #11111101b
+  263:	  0231	11 6B				call wait
+  264:	  0233	75 80 0C			mov	p0, #00001100b
+  265:	  0236	75 A0 FD			mov	p2, #11111101b
+  266:	  0239	11 6B				call wait
+  267:	  023B	12 0A B8		call harmonic_minor3
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 6
+
+
+
+ Line  I  Addr  Code            Source
+
+  268:	  023E	75 80 20			mov	p0, #00100000b
+  269:	  0241	75 A0 F7			mov	p2, #11110111b
+  270:	  0244	11 6B				call wait
+  271:	  0246	75 80 30			mov	p0, #00110000b
+  272:	  0249	75 A0 F7			mov	p2, #11110111b
+  273:	  024C	11 6B				call wait
+  274:	  024E	75 80 32			mov	p0, #00110010b
+  275:	  0251	75 A0 F7			mov	p2, #11110111b
+  276:	  0254	11 6B				call wait
+  277:	  0256	75 80 33			mov	p0, #00110011b
+  278:	  0259	75 A0 F7			mov	p2, #11110111b
+  279:	  025C	11 6B				call wait
+  280:	  025E	12 0C DC		call neamin5
+  281:	  0261	75 80 20			mov	p0, #00100000b
+  282:	  0264	75 A0 DF			mov	p2, #11011111b
+  283:	  0267	11 6B				call wait
+  284:	  0269	75 80 24			mov	p0, #00100100b
+  285:	  026C	75 A0 DF			mov	p2, #11011111b
+  286:	  026F	11 6B				call wait
+  287:	  0271	75 80 26			mov	p0, #00100110b
+  288:	  0274	75 A0 DF			mov	p2, #11011111b
+  289:	  0277	11 6B				call wait
+  290:	  0279	20 B6 97		jb p3.6,augmented
+  291:	  027C	02 00 E9		ljmp balik
+  292:	  027F			jalan6:
+  293:	  027F	BD 06 5D		cjne r5,#6,jalan7
+  294:	  0282	12 08 9B		call nyala_awal
+  295:	  0285			be_bop:
+  296:	  0285	12 0A D4		call ion1
+  297:	  0288	12 0A 08		call dor2
+  298:	  028B	75 80 20			mov	p0, #00100000b
+  299:	  028E	75 A0 FB			mov	p2, #11111011b
+  300:	  0291	11 6B				call wait
+  301:	  0293	75 80 30			mov	p0, #00110000b
+  302:	  0296	75 A0 FB			mov	p2, #11111011b
+  303:	  0299	11 6B				call wait
+  304:	  029B	75 80 38			mov	p0, #00111000b
+  305:	  029E	75 A0 FB			mov	p2, #11111011b
+  306:	  02A1	11 6B				call wait
+  307:	  02A3	75 80 3A			mov	p0, #00111010b
+  308:	  02A6	75 A0 FB			mov	p2, #11111011b
+  309:	  02A9	11 6B				call wait
+  310:	  02AB	12 0B 31		call ion4
+  311:	  02AE	75 80 20			mov	p0, #00100000b
+  312:	  02B1	75 A0 EF			mov	p2, #11101111b
+  313:	  02B4	11 6B				call wait
+  314:	  02B6	75 80 28			mov	p0, #00101000b
+  315:	  02B9	75 A0 EF			mov	p2, #11101111b
+  316:	  02BC	11 6B				call wait
+  317:	  02BE	75 80 2C			mov	p0, #00101100b
+  318:	  02C1	75 A0 EF			mov	p2, #11101111b
+  319:	  02C4	11 6B				call wait
+  320:	  02C6	75 80 2E			mov	p0, #00101110b
+  321:	  02C9	75 A0 EF			mov	p2, #11101111b
+  322:	  02CC	11 6B				call wait
+  323:	  02CE	75 80 2F			mov	p0, #00101111b
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 7
+
+
+
+ Line  I  Addr  Code            Source
+
+  324:	  02D1	75 A0 EF			mov	p2, #11101111b
+  325:	  02D4	11 6B				call wait
+  326:	  02D6	12 0B 72		call ion6
+  327:	  02D9	20 B6 A9		jb p3.6,be_bop
+  328:	  02DC	02 00 E9		ljmp balik
+  329:	  02DF			jalan7:
+  330:	  02DF	BD 07 30		cjne r5,#7,jalan8
+  331:	  02E2	12 08 9B		call nyala_awal
+  332:	  02E5			bluemaj:
+  333:	  02E5	12 09 24		call blumaj1
+  334:	  02E8	12 09 40		call blumaj2
+  335:	  02EB	12 09 65		call blumaj3
+  336:	  02EE	12 09 78		call blumaj4
+  337:	  02F1	75 80 20		mov p0,#00100000b
+  338:	  02F4	75 A0 EF		mov p2,#11101111b
+  339:	  02F7	11 6B			call wait
+  340:	  02F9	75 80 28		mov p0,#00101000b
+  341:	  02FC	75 A0 EF		mov p2,#11101111b
+  342:	  02FF	11 6B			call wait
+  343:	  0301	75 80 29		mov p0,#00101001b
+  344:	  0304	75 A0 EF		mov p2,#11101111b
+  345:	  0307	11 6B			call wait
+  346:	  0309	12 09 9D		call blumaj6
+  347:	  030C	20 B6 D6		jb p3.6,bluemaj
+  348:	  030F	02 00 E9		ljmp balik
+  349:	  0312			jalan8:
+  350:	  0312	BD 08 3B		cjne r5,#8,jalan9
+  351:	  0315	12 08 9B		call nyala_awal
+  352:	  0318			bluemin:
+  353:	  0318	12 09 24		call blumaj1
+  354:	  031B	12 09 40		call blumaj2
+  355:	  031E	75 80 20			mov p0,#00100000b
+  356:	  0321	75 A0 FB			mov p2,#11111011b
+  357:	  0324	11 6B				call wait
+  358:	  0326	12 09 65		call blumaj3
+  359:	  0329	12 09 78		call blumaj4
+  360:	  032C	75 80 20			mov p0,#00100000b
+  361:	  032F	75 A0 EF			mov p2,#11101111b
+  362:	  0332	11 6B				call wait
+  363:	  0334	75 80 24			mov p0,#00100100b
+  364:	  0337	75 A0 EF			mov p2,#11101111b
+  365:	  033A	11 6B				call wait
+  366:	  033C	75 80 25			mov p0,#00100101b
+  367:	  033F	75 A0 EF			mov p2,#11101111b
+  368:	  0342	11 6B				call wait
+  369:	  0344	12 09 9D		call blumaj6
+  370:	  0347	20 B6 CE		jb p3.6,bluemin
+  371:	  034A	02 00 E9		ljmp balik
+  372:	  034D	02 04 37	walk:	ljmp jalan10
+  373:	  0350			jalan9:
+  374:	  0350	BD 09 FA		cjne r5,#9,walk
+  375:	  0353	12 08 9B		call nyala_awal
+  376:	  0356	75 80 20	chrom:		mov	p0, #00100000b	;11111111
+  377:	  0359	12 09 B9			call chrom1
+  378:	  035C	75 80 30			mov	p0, #00110000b
+  379:	  035F	12 09 B9			call chrom1
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 8
+
+
+
+ Line  I  Addr  Code            Source
+
+  380:	  0362	75 80 38			mov	p0, #00111000b
+  381:	  0365	12 09 B9			call chrom1
+  382:	  0368	75 80 3C			mov	p0, #00111100b
+  383:	  036B	12 09 B9			call chrom1
+  384:	  036E	75 80 3E			mov	p0, #00111110b
+  385:	  0371	12 09 B9			call chrom1
+  386:	  0374	75 80 3F			mov	p0, #00111111b
+  387:	  0377	12 09 B9			call chrom1
+  388:	  037A	75 80 20			mov	p0, #00100000b
+  389:	  037D	12 09 C0			call chrom2
+  390:	  0380	75 80 30			mov	p0, #00110000b
+  391:	  0383	12 09 C0			call chrom2
+  392:	  0386	75 80 38			mov	p0, #00111000b
+  393:	  0389	12 09 C0			call chrom2
+  394:	  038C	75 80 3C			mov	p0, #00111100b
+  395:	  038F	12 09 C0			call chrom2
+  396:	  0392	75 80 3E			mov	p0, #00111110b
+  397:	  0395	12 09 C0			call chrom2
+  398:	  0398	75 80 3F			mov	p0, #00111111b
+  399:	  039B	12 09 C0			call chrom2
+  400:	  039E	75 80 20			mov	p0, #00100000b
+  401:	  03A1	12 09 C7			call chrom3
+  402:	  03A4	75 80 30			mov	p0, #00110000b
+  403:	  03A7	12 09 C7			call chrom3
+  404:	  03AA	75 80 38			mov	p0, #00111000b
+  405:	  03AD	12 09 C7			call chrom3
+  406:	  03B0	75 80 3C			mov	p0, #00111100b
+  407:	  03B3	12 09 C7			call chrom3
+  408:	  03B6	75 80 3E			mov	p0, #00111110b
+  409:	  03B9	12 09 C7			call chrom3
+  410:	  03BC	75 80 3F			mov	p0, #00111111b
+  411:	  03BF	12 09 C7			call chrom3
+  412:	  03C2	75 80 20			mov	p0, #00100000b
+  413:	  03C5	12 09 CE			call chrom4
+  414:	  03C8	75 80 30			mov	p0, #00110000b
+  415:	  03CB	12 09 CE			call chrom4
+  416:	  03CE	75 80 38			mov	p0, #00111000b
+  417:	  03D1	12 09 CE			call chrom4
+  418:	  03D4	75 80 3C			mov	p0, #00111100b
+  419:	  03D7	12 09 CE			call chrom4
+  420:	  03DA	75 80 3E			mov	p0, #00111110b
+  421:	  03DD	12 09 CE			call chrom4
+  422:	  03E0	75 80 3F			mov	p0, #00111111b
+  423:	  03E3	12 09 CE			call chrom4
+  424:	  03E6	75 80 20			mov	p0, #00100000b
+  425:	  03E9	12 09 D5			call chrom5
+  426:	  03EC	75 80 30			mov	p0, #00110000b
+  427:	  03EF	12 09 D5			call chrom5
+  428:	  03F2	75 80 38			mov	p0, #00111000b
+  429:	  03F5	12 09 D5			call chrom5
+  430:	  03F8	75 80 3C			mov	p0, #00111100b
+  431:	  03FB	12 09 D5			call chrom5
+  432:	  03FE	75 80 3E			mov	p0, #00111110b
+  433:	  0401	12 09 D5			call chrom5
+  434:	  0404	75 80 3F			mov	p0, #00111111b
+  435:	  0407	12 09 D5			call chrom5
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 9
+
+
+
+ Line  I  Addr  Code            Source
+
+  436:	  040A	75 80 20			mov	p0, #00100000b
+  437:	  040D	12 09 DC			call chrom6
+  438:	  0410	75 80 30			mov	p0, #00110000b
+  439:	  0413	12 09 DC			call chrom6
+  440:	  0416	75 80 38			mov	p0, #00111000b
+  441:	  0419	12 09 DC			call chrom6
+  442:	  041C	75 80 3C			mov	p0, #00111100b
+  443:	  041F	12 09 DC			call chrom6
+  444:	  0422	75 80 3E			mov	p0, #00111110b
+  445:	  0425	12 09 DC			call chrom6
+  446:	  0428	75 80 3F			mov	p0, #00111111b
+  447:	  042B	12 09 DC			call chrom6
+  448:	  042E	20 B6 03		jb p3.6,loncat
+  449:	  0431	02 00 E9		ljmp balik
+  450:	  0434	02 03 56	loncat:	ljmp chrom
+  451:	  0437			jalan10:
+  452:	  0437	BD 0A 42		cjne r5,#10,jalan11
+  453:	  043A	12 08 9B		call nyala_awal
+  454:	  043D			dimarp:
+  455:	  043D	12 08 CE		call arpeggio_minor1
+  456:	  0440	75 80 10			mov	p0, #00010000b
+  457:	  0443	75 A0 FD			mov	p2, #11111101b
+  458:	  0446	11 6B				call wait
+  459:	  0448	75 80 12			mov	p0, #00010010b
+  460:	  044B	75 A0 FD			mov	p2, #11111101b
+  461:	  044E	11 6B				call wait
+  462:	  0450	12 08 EB		call arpeggio_minor3
+  463:	  0453	75 80 20			mov	p0, #00100000b
+  464:	  0456	75 A0 F7			mov	p2, #11110111b
+  465:	  0459	11 6B				call wait
+  466:	  045B	75 80 24			mov	p0, #00100100b
+  467:	  045E	75 A0 F7			mov	p2, #11110111b
+  468:	  0461	11 6B				call wait
+  469:	  0463	75 80 08			mov	p0, #00001000b
+  470:	  0466	75 A0 EF			mov	p2, #11101111b
+  471:	  0469	11 6B				call wait
+  472:	  046B	75 80 09			mov	p0, #00001001b
+  473:	  046E	75 A0 EF			mov	p2, #11101111b
+  474:	  0471	11 6B				call wait
+  475:	  0473	12 09 11		call arpeggio_minor6
+  476:	  0476	20 B6 C4		jb p3.6,dimarp
+  477:	  0479	02 00 E9		ljmp balik
+  478:	  047C			jalan11:
+  479:	  047C	BD 0B 1B		cjne r5,#11,jalan12
+  480:	  047F	12 08 9B		call nyala_awal
+  481:	  0482			dorian:
+  482:	  0482	12 09 E3		call dor1
+  483:	  0485	12 0A 08		call dor2
+  484:	  0488	12 0A 2D		call dor3
+  485:	  048B	12 0A 52		call dor4
+  486:	  048E	12 0A 6E		call dor5
+  487:	  0491	12 0A 93		call dor6
+  488:	  0494	20 B6 EB		jb p3.6,dorian
+  489:	  0497	02 00 E9		ljmp balik
+  490:	  049A			jalan12:
+  491:	  049A	BD 0C 77		cjne r5,#12,jalan13
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 10
+
+
+
+ Line  I  Addr  Code            Source
+
+  492:	  049D	12 08 9B		call nyala_awal
+  493:	  04A0			harmin:
+  494:	  04A0	75 80 20			mov	p0, #00100000b
+  495:	  04A3	75 A0 FE			mov	p2, #11111110b
+  496:	  04A6	11 6B				call wait
+  497:	  04A8	75 80 28			mov	p0, #00101000b
+  498:	  04AB	75 A0 FE			mov	p2, #11111110b
+  499:	  04AE	11 6B				call wait
+  500:	  04B0	75 80 2C			mov	p0, #00101100b
+  501:	  04B3	75 A0 FE			mov	p2, #11111110b
+  502:	  04B6	11 6B				call wait
+  503:
+  504:	  04B8	75 80 20			mov	p0, #00100000b
+  505:	  04BB	75 A0 FD			mov	p2, #11111101b
+  506:	  04BE	11 6B				call wait
+  507:	  04C0	75 80 28			mov	p0, #00101000b
+  508:	  04C3	75 A0 FD			mov	p2, #11111101b
+  509:	  04C6	11 6B				call wait
+  510:	  04C8	75 80 2C			mov	p0, #00101100b
+  511:	  04CB	75 A0 FD			mov	p2, #11111101b
+  512:	  04CE	11 6B				call wait
+  513:	  04D0	12 0A B8		call harmonic_minor3
+  514:	  04D3	12 0A 52		call dor4
+  515:	  04D6	75 80 2B		mov	p0, #00101011b
+  516:	  04D9	75 A0 F7		mov	p2, #11110111b
+  517:	  04DC	11 6B			call wait
+  518:	  04DE	75 80 20			mov	p0, #00100000b
+  519:	  04E1	75 A0 EF			mov	p2, #11101111b
+  520:	  04E4	11 6B				call wait
+  521:	  04E6	75 80 30			mov	p0, #00110000b
+  522:	  04E9	75 A0 EF			mov	p2, #11101111b
+  523:	  04EC	11 6B				call wait
+  524:	  04EE	75 80 31			mov	p0, #00110001b
+  525:	  04F1	75 A0 EF			mov	p2, #11101111b
+  526:	  04F4	11 6B				call wait
+  527:
+  528:	  04F6	75 80 20			mov	p0, #00100000b
+  529:	  04F9	75 A0 DF			mov	p2, #11011111b
+  530:	  04FC	11 6B				call wait
+  531:	  04FE	75 80 28			mov	p0, #00101000b
+  532:	  0501	75 A0 DF			mov	p2, #11011111b
+  533:	  0504	11 6B				call wait
+  534:	  0506	75 80 2C			mov	p0, #00101100b
+  535:	  0509	75 A0 DF			mov	p2, #11011111b
+  536:	  050C	11 6B				call wait
+  537:	  050E	20 B6 8F		jb p3.6,harmin
+  538:	  0511	02 00 E9		ljmp balik
+  539:
+  540:	  0514			jalan13:
+  541:	  0514	BD 0D 1B		cjne r5,#13,jalan14
+  542:	  0517	12 08 9B		call nyala_awal
+  543:	  051A			ionian:
+  544:	  051A	12 0A D4		call ion1
+  545:	  051D	12 0A F9		call ion2
+  546:	  0520	12 0B 15		call ion3
+  547:	  0523	12 0B 31		call ion4
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 11
+
+
+
+ Line  I  Addr  Code            Source
+
+  548:	  0526	12 0B 4D		call ion5
+  549:	  0529	12 0B 72		call ion6
+  550:	  052C	20 B6 EB		jb p3.6,ionian
+  551:	  052F	02 00 E9		ljmp balik
+  552:	  0532			jalan14:
+  553:	  0532	BD 0E 38		cjne r5,#14,jalan15
+  554:	  0535	12 08 9B		call nyala_awal
+  555:	  0538			locrian:
+  556:	  0538	12 0B 97		call loc1
+  557:	  053B	12 0B BC		call loc2
+  558:	  053E	12 0B E1		call loc3
+  559:	  0541	75 80 20			mov p0,#00100000b
+  560:	  0544	75 A0 F7			mov p2,#11110111b
+  561:	  0547	11 6B				call wait
+  562:	  0549	75 80 28			mov p0,#00101000b
+  563:	  054C	75 A0 F7			mov p2,#11110111b
+  564:	  054F	11 6B				call wait
+  565:	  0551	75 80 2C			mov p0,#00101100b
+  566:	  0554	75 A0 F7			mov p2,#11110111b
+  567:	  0557	11 6B				call wait
+  568:	  0559	75 80 2D			mov p0,#00101101b
+  569:	  055C	75 A0 F7			mov p2,#11110111b
+  570:	  055F	11 6B				call wait
+  571:	  0561	12 0C 06		call loc5
+  572:	  0564	12 0C 22		call loc6
+  573:	  0567	20 B6 CE		jb p3.6,locrian
+  574:	  056A	02 00 E9		ljmp balik
+  575:	  056D			jalan15:
+  576:	  056D	BD 0F 45		cjne r5,#15,jalan16
+  577:	  0570	12 08 9B		call nyala_awal
+  578:	  0573			lydian:
+  579:	  0573	12 0C 47		call lyd1
+  580:	  0576	75 80 10			mov p0,#00010000b
+  581:	  0579	75 A0 FD			mov p2,#11111101b	;010110
+  582:	  057C	11 6B				call wait
+  583:	  057E	75 80 18			mov p0,#00011000b
+  584:	  0581	75 A0 FD			mov p2,#11111101b
+  585:	  0584	11 6B				call wait
+  586:	  0586	75 80 1A			mov p0,#00011010b
+  587:	  0589	75 A0 FD			mov p2,#11111101b
+  588:	  058C	11 6B				call wait
+  589:	  058E	12 0B 15		call ion3
+  590:	  0591	75 80 10			mov p0,#00010000b
+  591:	  0594	75 A0 F7			mov p2,#11110111b	;011010
+  592:	  0597	11 6B				call wait
+  593:	  0599	75 80 14			mov p0,#00010100b
+  594:	  059C	75 A0 F7			mov p2,#11110111b
+  595:	  059F	11 6B				call wait
+  596:	  05A1	75 80 16			mov p0,#00010110b
+  597:	  05A4	75 A0 F7			mov p2,#11110111b
+  598:	  05A7	11 6B				call wait
+  599:	  05A9	12 0B 4D		call ion5
+  600:	  05AC	12 0C 63		call lyd6
+  601:	  05AF	20 B6 C1		jb p3.6,lydian
+  602:	  05B2	02 00 E9		ljmp balik
+  603:	  05B5			jalan16:
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 12
+
+
+
+ Line  I  Addr  Code            Source
+
+  604:	  05B5	BD 10 30		cjne r5,#16,jalan17
+  605:	  05B8	12 08 9B		call nyala_awal
+  606:	  05BB	12 0A D4	major:	call ion1
+  607:	  05BE	12 0A F9		call ion2
+  608:	  05C1	12 0B 15		call ion3
+  609:	  05C4	12 0B 31		call ion4
+  610:	  05C7	75 80 20			mov	p0, #00100000b
+  611:	  05CA	75 A0 EF			mov	p2, #11101111b	;101010
+  612:	  05CD	11 6B				call wait
+  613:	  05CF	75 80 28			mov	p0, #00101000b
+  614:	  05D2	75 A0 EF			mov	p2, #11101111b
+  615:	  05D5	11 6B				call wait
+  616:	  05D7	75 80 2A			mov	p0, #00101010b
+  617:	  05DA	75 A0 EF			mov	p2, #11101111b
+  618:	  05DD	11 6B				call wait
+  619:	  05DF	12 0C 63		call lyd6
+  620:	  05E2	20 B6 D6		jb p3.6,major
+  621:	  05E5	02 00 E9		ljmp balik
+  622:	  05E8			jalan17:
+  623:	  05E8	BD 11 1B		cjne r5,#17,jalan18
+  624:	  05EB	12 08 9B		call nyala_awal
+  625:	  05EE	12 09 E3	minor:	call dor1
+  626:	  05F1	12 0D 01		call phry2
+  627:	  05F4	12 0A 2D		call dor3
+  628:	  05F7	12 0D 0D		call phry4
+  629:	  05FA	12 0D 32		call phry5
+  630:	  05FD	12 0A 93		call dor6
+  631:	  0600	20 B6 EB		jb p3.6,minor
+  632:	  0603	02 00 E9		ljmp balik
+  633:	  0606			jalan18:
+  634:	  0606	BD 12 23		cjne r5,#18,jalan19
+  635:	  0609	12 08 9B		call nyala_awal
+  636:	  060C			melodic:
+  637:	  060C	12 09 E3		call dor1
+  638:	  060F	12 0A F9		call ion2
+  639:	  0612	12 0B 15		call ion3
+  640:	  0615	75 80 1B		mov p0,#00011011b
+  641:	  0618	75 A0 FB		mov p2,#11111011b
+  642:	  061B	11 6B			call wait
+  643:	  061D	12 0A 52		call dor4
+  644:	  0620	12 0B 4D		call ion5
+  645:	  0623	12 0A 93		call dor6
+  646:	  0626	20 B6 E3		jb p3.6,melodic
+  647:	  0629	02 00 E9		ljmp balik
+  648:	  062C			jalan19:
+  649:	  062C	BD 13 1B		cjne r5,#19,jalan20
+  650:	  062F	12 08 9B		call nyala_awal
+  651:	  0632	12 0A D4	mixo:	call ion1
+  652:	  0635	12 0A 08		call dor2
+  653:	  0638	12 0C 7F		call mix3
+  654:	  063B	12 0B 31		call ion4
+  655:	  063E	12 0A 6E		call dor5
+  656:	  0641	12 0B 72		call ion6
+  657:	  0644	20 B6 EB		jb p3.6,mixo
+  658:	  0647	02 00 E9		ljmp balik
+  659:	  064A			jalan20:
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 13
+
+
+
+ Line  I  Addr  Code            Source
+
+  660:	  064A	BD 14 1B		cjne r5,#20,jalan21
+  661:	  064D	12 08 9B		call nyala_awal
+  662:	  0650	12 0B 97	neamaj:	call loc1
+  663:	  0653	12 0A F9		call ion2
+  664:	  0656	12 0C B7		call neamin3
+  665:	  0659	12 0A 52		call dor4
+  666:	  065C	12 0B 4D		call ion5
+  667:	  065F	12 0C 22		call loc6
+  668:	  0662	20 B6 EB		jb p3.6,neamaj
+  669:	  0665	02 00 E9		ljmp balik
+  670:	  0668			jalan21:
+  671:	  0668	BD 15 23		cjne r5,#21,jalan22
+  672:	  066B	12 08 9B		call nyala_awal
+  673:	  066E	12 0B 97	neamin: call loc1
+  674:	  0671	12 0C 9B		call neamin2
+  675:	  0674	12 0C B7		call neamin3
+  676:	  0677	12 0A 52		call dor4
+  677:	  067A	75 80 2B		mov p0,#00101011b
+  678:	  067D	75 A0 F7		mov p2,#11110111b
+  679:	  0680	11 6B			call wait
+  680:	  0682	12 0C DC		call neamin5
+  681:	  0685	12 0C 22		call loc6
+  682:	  0688	20 B6 E3		jb p3.6,neamin
+  683:	  068B	02 00 E9		ljmp balik
+  684:	  068E			jalan22:
+  685:	  068E	BD 16 4F		cjne r5,#22,jalan23
+  686:	  0691	12 08 9B		call nyala_awal
+  687:	  0694	12 0C 47	penmaj: call lyd1
+  688:	  0697	75 80 08			mov	p0, #00001000b
+  689:	  069A	75 A0 FD			mov	p2, #11111101b
+  690:	  069D	11 6B				call wait
+  691:	  069F	75 80 0A			mov	p0, #00001010b
+  692:	  06A2	75 A0 FD			mov	p2, #11111101b
+  693:	  06A5	11 6B				call wait
+  694:
+  695:	  06A7	75 80 08			mov	p0, #00001000b
+  696:	  06AA	75 A0 FB			mov	p2, #11111011b
+  697:	  06AD	11 6B				call wait
+  698:	  06AF	75 80 0A			mov	p0, #00001010b
+  699:	  06B2	75 A0 FB			mov	p2, #11111011b
+  700:	  06B5	11 6B				call wait
+  701:
+  702:	  06B7	75 80 10			mov	p0, #00010000b
+  703:	  06BA	75 A0 F7			mov	p2, #11110111b
+  704:	  06BD	11 6B				call wait
+  705:	  06BF	75 80 12			mov	p0, #00010010b
+  706:	  06C2	75 A0 F7			mov	p2, #11110111b
+  707:	  06C5	11 6B				call wait
+  708:
+  709:	  06C7	75 80 20			mov	p0, #00100000b
+  710:	  06CA	75 A0 EF			mov	p2, #11101111b
+  711:	  06CD	11 6B				call wait
+  712:	  06CF	75 80 28			mov	p0, #00101000b
+  713:	  06D2	75 A0 EF			mov	p2, #11101111b
+  714:	  06D5	11 6B				call wait
+  715:	  06D7	12 0C 63		call lyd6
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 14
+
+
+
+ Line  I  Addr  Code            Source
+
+  716:	  06DA	20 B6 B7		jb p3.6,penmaj
+  717:	  06DD	02 00 E9		ljmp balik
+  718:	  06E0			jalan23:
+  719:	  06E0	BD 17 67		cjne r5,#23,jalan24
+  720:	  06E3	12 08 9B		call nyala_awal
+  721:	  06E6			penmin:
+  722:	  06E6	75 80 20			mov	p0, #00100000b
+  723:	  06E9	75 A0 FE			mov	p2, #11111110b
+  724:	  06EC	11 6B				call wait
+  725:	  06EE	75 80 21			mov	p0, #00100001b
+  726:	  06F1	75 A0 FE			mov	p2, #11111110b
+  727:	  06F4	11 6B				call wait
+  728:
+  729:	  06F6	75 80 20			mov	p0, #00100000b
+  730:	  06F9	75 A0 FD			mov	p2, #11111101b
+  731:	  06FC	11 6B				call wait
+  732:	  06FE	75 80 28			mov	p0, #00101000b
+  733:	  0701	75 A0 FD			mov	p2, #11111101b
+  734:	  0704	11 6B				call wait
+  735:	  0706	75 80 29			mov	p0, #00101001b
+  736:	  0709	75 A0 FD			mov	p2, #11111101b
+  737:	  070C	11 6B				call wait
+  738:
+  739:	  070E	75 80 20			mov	p0, #00100000b
+  740:	  0711	75 A0 FB			mov	p2, #11111011b
+  741:	  0714	11 6B				call wait
+  742:	  0716	75 80 28			mov	p0, #00101000b
+  743:	  0719	75 A0 FB			mov	p2, #11111011b
+  744:	  071C	11 6B				call wait
+  745:	  071E	75 80 29			mov	p0, #00101001b
+  746:	  0721	75 A0 FB			mov	p2, #11111011b
+  747:	  0724	11 6B				call wait
+  748:	  0726	12 0A 52		call dor4
+  749:	  0729	75 80 20			mov	p0, #00100000b
+  750:	  072C	75 A0 EF			mov	p2, #11101111b
+  751:	  072F	11 6B				call wait
+  752:	  0731	75 80 24			mov	p0, #00100100b
+  753:	  0734	75 A0 EF			mov	p2, #11101111b
+  754:	  0737	11 6B				call wait
+  755:	  0739	75 80 25			mov	p0, #00100101b
+  756:	  073C	75 A0 EF			mov	p2, #11101111b
+  757:	  073F	11 6B				call wait
+  758:	  0741	12 09 9D		call blumaj6
+  759:	  0744	20 B6 9F		jb p3.6,penmin
+  760:	  0747	02 00 E9		ljmp balik
+  761:	  074A			jalan24:
+  762:	  074A	BD 18 1B		cjne r5,#24,jalan25
+  763:	  074D	12 08 9B		call nyala_awal
+  764:	  0750			phrygian:
+  765:	  0750	12 0B 97		call loc1
+  766:	  0753	12 0D 01		call phry2
+  767:	  0756	12 0B E1		call loc3
+  768:	  0759	12 0D 0D		call phry4
+  769:	  075C	12 0D 32		call phry5
+  770:	  075F	12 0C 22		call loc6
+  771:	  0762	20 B6 EB		jb p3.6,phrygian
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 15
+
+
+
+ Line  I  Addr  Code            Source
+
+  772:	  0765	02 00 E9		ljmp balik
+  773:	  0768			jalan25:
+  774:	  0768	7D 00			mov r5,#0
+  775:	  076A	02 00 E6		ljmp rst
+  776:				;=======================pilih scale=================================
+  777:	  076D			up:
+  778:	  076D	30 B4 FD		jnb p3.4,$
+  779:	  0770	11 5E			call delay
+  780:	  0772	BA 01 10		cjne r2,#1,up2
+  781:	  0775	90 0D 77		mov dptr,#word3
+  782:	  0778	7C 10		cetak:	mov r4,#16
+  783:	  077A	79 80		       	mov r1,#80h
+  784:	  077C	11 46		       	call write_inst
+  785:	  077E	11 27		       	call write
+  786:	  0780	0A		       	inc r2
+  787:	  0781	0D		       	inc r5
+  788:	  0782	02 00 CF	       	ljmp tekan
+  789:
+  790:	  0785	BA 02 06	up2:	cjne r2,#2,up3
+  791:	  0788	90 0D 87			mov dptr,#word4
+  792:	  078B	02 07 78			ljmp cetak
+  793:	  078E	BA 03 06	up3:	cjne r2,#3,up4
+  794:	  0791	90 0D 97			mov dptr,#word5
+  795:	  0794	02 07 78			ljmp cetak
+  796:	  0797	BA 04 06	up4:	cjne r2,#4,up5
+  797:	  079A	90 0D A7			mov dptr,#word6
+  798:	  079D	02 07 78			ljmp cetak
+  799:	  07A0	BA 05 06	up5:	cjne r2,#5,up6
+  800:	  07A3	90 0D B7			mov dptr,#word7
+  801:	  07A6	02 07 78			ljmp cetak
+  802:	  07A9	BA 06 06	up6:	cjne r2,#6,up7
+  803:	  07AC	90 0D C7			mov dptr,#word8
+  804:	  07AF	02 07 78			ljmp cetak
+  805:	  07B2	BA 07 06	up7:	cjne r2,#7,up8
+  806:	  07B5	90 0D D7			mov dptr,#word9
+  807:	  07B8	02 07 78			ljmp cetak
+  808:	  07BB	BA 08 06	up8:	cjne r2,#8,up9
+  809:	  07BE	90 0D E7			mov dptr,#word10
+  810:	  07C1	02 07 78			ljmp cetak
+  811:	  07C4	BA 09 06	up9:	cjne r2,#9,up10
+  812:	  07C7	90 0D F7			mov dptr,#word11
+  813:	  07CA	02 07 78			ljmp cetak
+  814:	  07CD	BA 0A 06	up10:	cjne r2,#10,up11
+  815:	  07D0	90 0E 07			mov dptr,#word12
+  816:	  07D3	02 07 78			ljmp cetak
+  817:	  07D6	BA 0B 06	up11:	cjne r2,#11,up12
+  818:	  07D9	90 0E 17			mov dptr,#word13
+  819:	  07DC	02 07 78			ljmp cetak
+  820:	  07DF	BA 0C 06	up12:	cjne r2,#12,up13
+  821:	  07E2	90 0E 27			mov dptr,#word14
+  822:	  07E5	02 07 78			ljmp cetak
+  823:	  07E8	BA 0D 06	up13:	cjne r2,#13,up14
+  824:	  07EB	90 0E 37			mov dptr,#word15
+  825:	  07EE	02 07 78			ljmp cetak
+  826:	  07F1	BA 0E 06	up14:	cjne r2,#14,up15
+  827:	  07F4	90 0E 47			mov dptr,#word16
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 16
+
+
+
+ Line  I  Addr  Code            Source
+
+  828:	  07F7	02 07 78			ljmp cetak
+  829:	  07FA	BA 0F 06	up15:	cjne r2,#15,up16
+  830:	  07FD	90 0E 57			mov dptr,#word17
+  831:	  0800	02 07 78			ljmp cetak
+  832:	  0803	BA 10 06	up16:	cjne r2,#16,up17
+  833:	  0806	90 0E 67			mov dptr,#word18
+  834:	  0809	02 07 78			ljmp cetak
+  835:	  080C	BA 11 06	up17:	cjne r2,#17,up18
+  836:	  080F	90 0E 77			mov dptr,#word19
+  837:	  0812	02 07 78			ljmp cetak
+  838:	  0815	BA 12 06	up18:	cjne r2,#18,up19
+  839:	  0818	90 0E 87			mov dptr,#word20
+  840:	  081B	02 07 78			ljmp cetak
+  841:	  081E	BA 13 06	up19:	cjne r2,#19,up20
+  842:	  0821	90 0E 97			mov dptr,#word21
+  843:	  0824	02 07 78			ljmp cetak
+  844:	  0827	BA 14 06	up20:	cjne r2,#20,up21
+  845:	  082A	90 0E A7			mov dptr,#word22
+  846:	  082D	02 07 78			ljmp cetak
+  847:	  0830	BA 15 06	up21:	cjne r2,#21,up22
+  848:	  0833	90 0E B7			mov dptr,#word23
+  849:	  0836	02 07 78			ljmp cetak
+  850:	  0839	BA 16 06	up22:	cjne r2,#22,up23
+  851:	  083C	90 0E C7			mov dptr,#word24
+  852:	  083F	02 07 78			ljmp cetak
+  853:	  0842	BA 17 06	up23:	cjne r2,#23,up24
+  854:	  0845	90 0E D7			mov dptr,#word25
+  855:	  0848	02 07 78			ljmp cetak
+  856:	  084B	BA 18 06	up24:	cjne r2,#24,up25
+  857:	  084E	90 0E E7			mov dptr,#word26
+  858:	  0851	02 07 78			ljmp cetak
+  859:	  0854	7A 01		up25:	mov r2,#1
+  860:	  0856	02 07 6D			ljmp up
+  861:				;==================pilih tempo=============================
+  862:	  0859	30 B5 FD	tempo:	jnb p3.5,$
+  863:	  085C	12 00 5E			call delay
+  864:	  085F	BB 01 13			cjne r3,#1,tempo2
+  865:	  0862	78 01				mov r0,#1
+  866:	  0864	90 0E F7			mov dptr,#word27
+  867:	  0867	7C 10		print:	mov r4,#16
+  868:	  0869	79 C0		       	mov r1,#0c0h
+  869:	  086B	12 00 46	       	call write_inst
+  870:	  086E	12 00 27	       	call write
+  871:	  0871	0B		       	inc r3
+  872:	  0872	02 00 CF	       	ljmp tekan
+  873:	  0875	BB 02 08	tempo2:	cjne r3,#2,tempo3
+  874:	  0878	78 02				mov r0,#2
+  875:	  087A	90 0F 07			mov dptr,#word28
+  876:	  087D	02 08 67			ljmp print
+  877:	  0880	BB 03 08	tempo3:	cjne r3,#3,tempo4
+  878:	  0883	78 03				mov r0,#3
+  879:	  0885	90 0F 17			mov dptr,#word29
+  880:	  0888	02 08 67			ljmp print
+  881:	  088B	BB 04 08	tempo4:	cjne r3,#4,tempo5
+  882:	  088E	78 04				mov r0,#4
+  883:	  0890	90 0F 27			mov dptr,#word30
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 17
+
+
+
+ Line  I  Addr  Code            Source
+
+  884:	  0893	02 08 67			ljmp print
+  885:	  0896	7B 01		tempo5:	mov r3,#1
+  886:	  0898	02 08 59			ljmp tempo
+  887:				;==================kesamaan scale===========================
+  888:	  089B	C2 B7		nyala_awal:	clr p3.7
+  889:	  089D	12 00 6B			call wait
+  890:	  08A0	D2 B7				setb p3.7
+  891:	  08A2	12 00 6B			call wait
+  892:	  08A5	DF F4				djnz r7,nyala_awal
+  893:	  08A7	22				ret
+  894:	  08A8			arabian5:
+  895:	  08A8	75 80 10			mov p0,#00010000b	;phrygian5,aeolian5,minor5,(locrian5,arabian5)+6
+  896:	  08AB	75 A0 EF			mov p2,#11101111b	;101011
+  897:	  08AE	12 00 6B			call wait
+  898:	  08B1	75 80 14			mov p0,#00010100b
+  899:	  08B4	75 A0 EF			mov p2,#11101111b
+  900:	  08B7	12 00 6B			call wait
+  901:	  08BA	75 80 15			mov p0,#00010101b
+  902:	  08BD	75 A0 EF			mov p2,#11101111b
+  903:	  08C0	12 00 6B			call wait
+  904:	  08C3	22				ret
+  905:	  08C4			arpeggio_major3:
+  906:	  08C4	75 80 08			mov	p0, #00001000b
+  907:	  08C7	75 A0 FB			mov	p2, #11111011b
+  908:	  08CA	12 00 6B			call wait
+  909:	  08CD	22				ret
+  910:	  08CE			arpeggio_minor1:		;arpeggio minor1, diminished arpeggio 1
+  911:	  08CE	75 80 20			mov	p0, #00100000b
+  912:	  08D1	75 A0 FE			mov	p2, #11111110b
+  913:	  08D4	12 00 6B			call wait
+  914:	  08D7	75 80 24			mov	p0, #00100100b
+  915:	  08DA	75 A0 FE			mov	p2, #11111110b
+  916:	  08DD	12 00 6B			call wait
+  917:	  08E0	22				ret
+  918:	  08E1			arpeggio_minor2:		;arpeggio minor2, arpeggio major2,
+  919:	  08E1	75 80 08			mov	p0, #00001000b
+  920:	  08E4	75 A0 FD			mov	p2, #11111101b
+  921:	  08E7	12 00 6B			call wait
+  922:	  08EA	22				ret
+  923:	  08EB			arpeggio_minor3:		;arpeggio minor3, diminished arpeggio 3
+  924:	  08EB	75 80 08			mov	p0, #00001000b
+  925:	  08EE	75 A0 FB			mov	p2, #11111011b
+  926:	  08F1	12 00 6B			call wait
+  927:	  08F4	75 80 09			mov	p0, #00001001b
+  928:	  08F7	75 A0 FB			mov	p2, #11111011b
+  929:	  08FA	12 00 6B			call wait
+  930:	  08FD	22				ret
+  931:	  08FE			arpeggio_minor5:		;arpeggio minor5, arpeggio major 5,
+  932:	  08FE	75 80 20			mov	p0, #00100000b
+  933:	  0901	75 A0 EF			mov	p2, #11101111b
+  934:	  0904	12 00 6B			call wait
+  935:	  0907	75 80 21			mov	p0, #00100001b
+  936:	  090A	75 A0 EF			mov	p2, #11101111b
+  937:	  090D	12 00 6B			call wait
+  938:	  0910	22				ret
+  939:	  0911			arpeggio_minor6: 		;arpeggio minor6, diminished arpeggio 6
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 18
+
+
+
+ Line  I  Addr  Code            Source
+
+  940:	  0911	75 80 20			mov	p0, #00100000b
+  941:	  0914	75 A0 DF			mov	p2, #11011111b
+  942:	  0917	12 00 6B			call wait
+  943:	  091A	75 80 24			mov	p0, #00100100b
+  944:	  091D	75 A0 DF			mov	p2, #11011111b
+  945:	  0920	12 00 6B			call wait
+  946:	  0923	22				ret
+  947:	  0924			blumaj1:
+  948:	  0924	75 80 20			mov p0,#00100000b
+  949:	  0927	75 A0 FE			mov p2,#11111110b	;101001 blues major1,blues minor1
+  950:	  092A	12 00 6B			call wait
+  951:	  092D	75 80 24			mov p0,#00100100b
+  952:	  0930	75 A0 FE			mov p2,#11111110b
+  953:	  0933	12 00 6B			call wait
+  954:	  0936	75 80 25			mov p0,#00100101b
+  955:	  0939	75 A0 FE			mov p2,#11111110b
+  956:	  093C	12 00 6B			call wait
+  957:	  093F	22				ret
+  958:	  0940			blumaj2:
+  959:	  0940	75 80 20			mov p0,#00100000b	;blues major2,blues minor2
+  960:	  0943	75 A0 FD			mov p2,#11111101b	;010111
+  961:	  0946	12 00 6B			call wait
+  962:	  0949	75 80 30			mov p0,#00110000b
+  963:	  094C	75 A0 FD			mov p2,#11111101b
+  964:	  094F	12 00 6B			call wait
+  965:	  0952	75 80 38			mov p0,#00111000b
+  966:	  0955	75 A0 FD			mov p2,#11111101b
+  967:	  0958	12 00 6B			call wait
+  968:	  095B	75 80 3A			mov p0,#00111010b
+  969:	  095E	75 A0 FD			mov p2,#11111101b
+  970:	  0961	12 00 6B			call wait
+  971:	  0964	22				ret
+  972:	  0965			blumaj3:
+  973:	  0965	75 80 08			mov p0,#00001000b		;blues major3,blues minor3+1
+  974:	  0968	75 A0 FB			mov p2,#11111011b	;100100
+  975:	  096B	12 00 6B			call wait
+  976:	  096E	75 80 09			mov p0,#00001001b
+  977:	  0971	75 A0 FB			mov p2,#11111011b
+  978:	  0974	12 00 6B			call wait
+  979:	  0977	22				ret
+  980:	  0978			blumaj4:
+  981:	  0978	75 80 20			mov p0,#00100000b		;blues major4,blues minor4
+  982:	  097B	75 A0 F7			mov p2,#11110111b	;011101
+  983:	  097E	12 00 6B			call wait
+  984:	  0981	75 80 28			mov p0,#00101000b
+  985:	  0984	75 A0 F7			mov p2,#11110111b
+  986:	  0987	12 00 6B			call wait
+  987:	  098A	75 80 2C			mov p0,#00101100b
+  988:	  098D	75 A0 F7			mov p2,#11110111b
+  989:	  0990	12 00 6B			call wait
+  990:	  0993	75 80 2E			mov p0,#00101110b
+  991:	  0996	75 A0 F7			mov p2,#11110111b
+  992:	  0999	12 00 6B			call wait
+  993:	  099C	22				ret
+  994:	  099D			blumaj6:
+  995:	  099D	75 80 20			mov p0,#00100000b		;blues major6,blues minor6,pentatonic minor6
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 19
+
+
+
+ Line  I  Addr  Code            Source
+
+  996:	  09A0	75 A0 DF			mov p2,#11011111b	;101001
+  997:	  09A3	12 00 6B			call wait
+  998:	  09A6	75 80 24			mov p0,#00100100b
+  999:	  09A9	75 A0 DF			mov p2,#11011111b
+ 1000:	  09AC	12 00 6B			call wait
+ 1001:	  09AF	75 80 25			mov p0,#00100101b
+ 1002:	  09B2	75 A0 DF			mov p2,#11011111b
+ 1003:	  09B5	12 00 6B			call wait
+ 1004:	  09B8	22				ret
+ 1005:	  09B9	75 A0 FE	chrom1:		mov	p2, #11111110b	;chrom satu"nya
+ 1006:	  09BC	12 00 6B			call wait
+ 1007:	  09BF	22				ret
+ 1008:	  09C0	75 A0 FD	chrom2:		mov	p2, #11111101b
+ 1009:	  09C3	12 00 6B			call wait
+ 1010:	  09C6	22				ret
+ 1011:	  09C7	75 A0 FB	chrom3:		mov	p2, #11111011b
+ 1012:	  09CA	12 00 6B			call wait
+ 1013:	  09CD	22				ret
+ 1014:	  09CE	75 A0 F7	chrom4:		mov	p2, #11110111b
+ 1015:	  09D1	12 00 6B			call wait
+ 1016:	  09D4	22				ret
+ 1017:	  09D5	75 A0 EF	chrom5:		mov	p2, #11101111b
+ 1018:	  09D8	12 00 6B			call wait
+ 1019:	  09DB	22				ret
+ 1020:	  09DC	75 A0 DF	chrom6:		mov	p2, #11011111b
+ 1021:	  09DF	12 00 6B			call wait
+ 1022:	  09E2	22				ret
+ 1023:	  09E3			dor1:
+ 1024:	  09E3	75 80 20			mov p0,#00100000b	;dorian1,aeolian1,minor1,melodic1
+ 1025:	  09E6	75 A0 FE			mov p2,#11111110b	;101101
+ 1026:	  09E9	12 00 6B			call wait
+ 1027:	  09EC	75 80 28			mov p0,#00101000b
+ 1028:	  09EF	75 A0 FE			mov p2,#11111110b
+ 1029:	  09F2	12 00 6B			call wait
+ 1030:	  09F5	75 80 2C			mov p0,#00101100b
+ 1031:	  09F8	75 A0 FE			mov p2,#11111110b
+ 1032:	  09FB	12 00 6B			call wait
+ 1033:	  09FE	75 80 2D			mov p0,#00101101b
+ 1034:	  0A01	75 A0 FE			mov p2,#11111110b
+ 1035:	  0A04	12 00 6B			call wait
+ 1036:	  0A07	22				ret
+ 1037:	  0A08			dor2:
+ 1038:	  0A08	75 80 20			mov p0,#00100000b	;dorian2,mixolydian2,Be-Bop2
+ 1039:	  0A0B	75 A0 FD			mov p2,#11111101b	;110101
+ 1040:	  0A0E	12 00 6B			call wait
+ 1041:	  0A11	75 80 28			mov p0,#00101000b
+ 1042:	  0A14	75 A0 FD			mov p2,#11111101b
+ 1043:	  0A17	12 00 6B			call wait
+ 1044:	  0A1A	75 80 2A			mov p0,#00101010b
+ 1045:	  0A1D	75 A0 FD			mov p2,#11111101b
+ 1046:	  0A20	12 00 6B			call wait
+ 1047:	  0A23	75 80 2B			mov p0,#00101011b
+ 1048:	  0A26	75 A0 FD			mov p2,#11111101b
+ 1049:	  0A29	12 00 6B			call wait
+ 1050:	  0A2C	22				ret
+ 1051:	  0A2D			dor3:
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 20
+
+
+
+ Line  I  Addr  Code            Source
+
+ 1052:	  0A2D	75 80 20			mov p0,#00100000b	;dorian3,aeolian3,minor3
+ 1053:	  0A30	75 A0 FB			mov p2,#11111011b	;110101
+ 1054:	  0A33	12 00 6B			call wait
+ 1055:	  0A36	75 80 28			mov p0,#00101000b
+ 1056:	  0A39	75 A0 FB			mov p2,#11111011b
+ 1057:
+ 1058:	  0A3C	12 00 6B			call wait
+ 1059:	  0A3F	75 80 2A			mov p0,#00101010b
+ 1060:	  0A42	75 A0 FB			mov p2,#11111011b
+ 1061:	  0A45	12 00 6B			call wait
+ 1062:	  0A48	75 80 2B			mov p0,#00101011b
+ 1063:	  0A4B	75 A0 FB			mov p2,#11111011b
+ 1064:	  0A4E	12 00 6B			call wait
+ 1065:	  0A51	22				ret
+ 1066:	  0A52			dor4:
+ 1067:	  0A52	75 80 20			mov p0,#00100000b	;dorian4,pentatonic minor4,melodic4,neapolitan major4
+ 1068:	  0A55	75 A0 F7			mov p2,#11110111b	;010101
+ 1069:	  0A58	12 00 6B			call wait
+ 1070:	  0A5B	75 80 28			mov p0,#00101000b
+ 1071:	  0A5E	75 A0 F7			mov p2,#11110111b
+ 1072:	  0A61	12 00 6B			call wait
+ 1073:	  0A64	75 80 2A			mov p0,#00101010b
+ 1074:	  0A67	75 A0 F7			mov p2,#11110111b
+ 1075:	  0A6A	12 00 6B			call wait
+ 1076:	  0A6D	22				ret
+ 1077:	  0A6E			dor5:
+ 1078:	  0A6E	75 80 20			mov p0,#00100000b	;dorian5,mixolydian5,
+ 1079:	  0A71	75 A0 EF			mov p2,#11101111b	;101101
+ 1080:	  0A74	12 00 6B			call wait
+ 1081:	  0A77	75 80 28			mov p0,#00101000b
+ 1082:	  0A7A	75 A0 EF			mov p2,#11101111b
+ 1083:	  0A7D	12 00 6B			call wait
+ 1084:	  0A80	75 80 2C			mov p0,#00101100b
+ 1085:	  0A83	75 A0 EF			mov p2,#11101111b
+ 1086:	  0A86	12 00 6B			call wait
+ 1087:	  0A89	75 80 2D			mov p0,#00101101b
+ 1088:	  0A8C	75 A0 EF			mov p2,#11101111b
+ 1089:	  0A8F	12 00 6B			call wait
+ 1090:	  0A92	22				ret
+ 1091:	  0A93			dor6:
+ 1092:	  0A93	75 80 20			mov p0,#00100000b	;dorian6,aeolian6,minor6,melodic6
+ 1093:	  0A96	75 A0 DF			mov p2,#11011111b	;101101
+ 1094:	  0A99	12 00 6B			call wait
+ 1095:	  0A9C	75 80 28			mov p0,#00101000b
+ 1096:	  0A9F	75 A0 DF			mov p2,#11011111b
+ 1097:	  0AA2	12 00 6B			call wait
+ 1098:	  0AA5	75 80 2C			mov p0,#00101100b
+ 1099:	  0AA8	75 A0 DF			mov p2,#11011111b
+ 1100:	  0AAB	12 00 6B			call wait
+ 1101:	  0AAE	75 80 2D			mov p0,#00101101b
+ 1102:	  0AB1	75 A0 DF			mov p2,#11011111b
+ 1103:	  0AB4	12 00 6B			call wait
+ 1104:	  0AB7	22				ret
+ 1105:	  0AB8			harmonic_minor3:            ; harmonicminor 3 augmented3
+ 1106:	  0AB8	75 80 10			mov	p0, #00010000b
+ 1107:	  0ABB	75 A0 FB			mov	p2, #11111011b
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 21
+
+
+
+ Line  I  Addr  Code            Source
+
+ 1108:	  0ABE	12 00 6B			call wait
+ 1109:	  0AC1	75 80 18			mov	p0, #00011000b
+ 1110:	  0AC4	75 A0 FB			mov	p2, #11111011b
+ 1111:	  0AC7	12 00 6B			call wait
+ 1112:	  0ACA	75 80 19			mov	p0, #00011001b
+ 1113:	  0ACD	75 A0 FB			mov	p2, #11111011b
+ 1114:	  0AD0	12 00 6B			call wait
+ 1115:	  0AD3	22				ret
+ 1116:	  0AD4			ion1:						;110101
+ 1117:	  0AD4	75 80 20			mov p0,#00100000b
+ 1118:	  0AD7	75 A0 FE			mov p2,#11111110b	;ionian1,mixolydian1,major1,be-bop1,arabian1
+ 1119:	  0ADA	12 00 6B			call wait
+ 1120:	  0ADD	75 80 28			mov p0,#00101000b
+ 1121:	  0AE0	75 A0 FE			mov p2,#11111110b
+ 1122:	  0AE3	12 00 6B			call wait
+ 1123:	  0AE6	75 80 2A			mov p0,#00101010b
+ 1124:	  0AE9	75 A0 FE			mov p2,#11111110b
+ 1125:	  0AEC	12 00 6B			call wait
+ 1126:	  0AEF	75 80 2B			mov p0,#00101011b
+ 1127:	  0AF2	75 A0 FE			mov p2,#11111110b
+ 1128:	  0AF5	12 00 6B			call wait
+ 1129:	  0AF8	22				ret
+ 1130:	  0AF9			ion2:						;010101
+ 1131:	  0AF9	75 80 20			mov p0,#00100000b
+ 1132:	  0AFC	75 A0 FD			mov p2,#11111101b	;ionian2,melodic2,neapolitan major2
+ 1133:	  0AFF	12 00 6B			call wait
+ 1134:	  0B02	75 80 28			mov p0,#00101000b
+ 1135:	  0B05	75 A0 FD			mov p2,#11111101b
+ 1136:	  0B08	12 00 6B			call wait
+ 1137:	  0B0B	75 80 2A			mov p0,#00101010b
+ 1138:	  0B0E	75 A0 FD			mov p2,#11111101b
+ 1139:	  0B11	12 00 6B			call wait
+ 1140:	  0B14	22				ret
+ 1141:	  0B15			ion3:						;010110
+ 1142:	  0B15	75 80 10			mov p0,#00010000b
+ 1143:	  0B18	75 A0 FB			mov p2,#11111011b	;ionian3,lydian3,major3,
+ 1144:	  0B1B	12 00 6B			call wait
+ 1145:	  0B1E	75 80 18			mov p0,#00011000b
+ 1146:	  0B21	75 A0 FB			mov p2,#11111011b
+ 1147:	  0B24	12 00 6B			call wait
+ 1148:	  0B27	75 80 1A			mov p0,#00011010b
+ 1149:	  0B2A	75 A0 FB			mov p2,#11111011b
+ 1150:	  0B2D	12 00 6B			call wait
+ 1151:	  0B30	22				ret
+ 1152:	  0B31			ion4:						;010110
+ 1153:	  0B31	75 80 10			mov p0,#00010000b
+ 1154:	  0B34	75 A0 F7			mov p2,#11110111b	;ionian4,mixolydian4,major4,be-bop4
+ 1155:	  0B37	12 00 6B			call wait
+ 1156:	  0B3A	75 80 18			mov p0,#00011000b
+ 1157:	  0B3D	75 A0 F7			mov p2,#11110111b
+ 1158:	  0B40	12 00 6B			call wait
+ 1159:	  0B43	75 80 1A			mov p0,#00011010b
+ 1160:	  0B46	75 A0 F7			mov p2,#11110111b
+ 1161:	  0B49	12 00 6B			call wait
+ 1162:	  0B4C	22				ret
+ 1163:	  0B4D			ion5:						;110101
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 22
+
+
+
+ Line  I  Addr  Code            Source
+
+ 1164:	  0B4D	75 80 20			mov p0,#00100000b
+ 1165:	  0B50	75 A0 EF			mov p2,#11101111b	;ionian5,lydian5,melodic5,neapolitan major5
+ 1166:	  0B53	12 00 6B			call wait
+ 1167:	  0B56	75 80 28			mov p0,#00101000b
+ 1168:	  0B59	75 A0 EF			mov p2,#11101111b
+ 1169:	  0B5C	12 00 6B			call wait
+ 1170:	  0B5F	75 80 2A			mov p0,#00101010b
+ 1171:	  0B62	75 A0 EF			mov p2,#11101111b
+ 1172:	  0B65	12 00 6B			call wait
+ 1173:	  0B68	75 80 2B			mov p0,#00101011b
+ 1174:	  0B6B	75 A0 EF			mov p2,#11101111b
+ 1175:	  0B6E	12 00 6B			call wait
+ 1176:	  0B71	22				ret
+ 1177:	  0B72			ion6:						;110101
+ 1178:	  0B72	75 80 20			mov p0,#00100000b
+ 1179:	  0B75	75 A0 DF			mov p2,#11011111b	;ionian6,mixolydian6,Be-bop6,Arabian6
+ 1180:	  0B78	12 00 6B			call wait
+ 1181:	  0B7B	75 80 28			mov p0,#00101000b
+ 1182:	  0B7E	75 A0 DF			mov p2,#11011111b
+ 1183:	  0B81	12 00 6B			call wait
+ 1184:	  0B84	75 80 2A			mov p0,#00101010b
+ 1185:	  0B87	75 A0 DF			mov p2,#11011111b
+ 1186:	  0B8A	12 00 6B			call wait
+ 1187:	  0B8D	75 80 2B			mov p0,#00101011b
+ 1188:	  0B90	75 A0 DF			mov p2,#11011111b
+ 1189:	  0B93	12 00 6B			call wait
+ 1190:	  0B96	22				ret
+ 1191:	  0B97			loc1:
+ 1192:	  0B97	75 80 20			mov p0,#00100000b	;locrian1,phrygian1,neapolitan major1,neapolitan minor1
+ 1193:	  0B9A	75 A0 FE			mov p2,#11111110b	;101011
+ 1194:	  0B9D	12 00 6B			call wait
+ 1195:	  0BA0	75 80 30			mov p0,#00110000b
+ 1196:	  0BA3	75 A0 FE			mov p2,#11111110b
+ 1197:	  0BA6	12 00 6B			call wait
+ 1198:	  0BA9	75 80 34			mov p0,#00110100b
+ 1199:	  0BAC	75 A0 FE			mov p2,#11111110b
+ 1200:	  0BAF	12 00 6B			call wait
+ 1201:	  0BB2	75 80 35			mov p0,#00110101b
+ 1202:	  0BB5	75 A0 FE			mov p2,#11111110b
+ 1203:	  0BB8	12 00 6B			call wait
+ 1204:	  0BBB	22				ret
+ 1205:	  0BBC			loc2:
+ 1206:	  0BBC	75 80 20			mov p0,#00100000b	;locrian2,arabian2,
+ 1207:	  0BBF	75 A0 FD			mov p2,#11111101b	;101011
+ 1208:	  0BC2	12 00 6B			call wait
+ 1209:	  0BC5	75 80 30			mov p0,#00110000b
+ 1210:	  0BC8	75 A0 FD			mov p2,#11111101b
+ 1211:	  0BCB	12 00 6B			call wait
+ 1212:	  0BCE	75 80 34			mov p0,#00110100b
+ 1213:	  0BD1	75 A0 FD			mov p2,#11111101b
+ 1214:	  0BD4	12 00 6B			call wait
+ 1215:	  0BD7	75 80 35			mov p0,#00110101b
+ 1216:	  0BDA	75 A0 FD			mov p2,#11111101b
+ 1217:	  0BDD	12 00 6B			call wait
+ 1218:	  0BE0	22				ret
+ 1219:	  0BE1			loc3:
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 23
+
+
+
+ Line  I  Addr  Code            Source
+
+ 1220:	  0BE1	75 80 20			mov p0,#00100000b	;locrian3,phrygian3,
+ 1221:	  0BE4	75 A0 FB			mov p2,#11111011b	;101101
+ 1222:	  0BE7	12 00 6B			call wait
+ 1223:	  0BEA	75 80 28			mov p0,#00101000b
+ 1224:	  0BED	75 A0 FB			mov p2,#11111011b
+ 1225:	  0BF0	12 00 6B			call wait
+ 1226:	  0BF3	75 80 2C			mov p0,#00101100b
+ 1227:	  0BF6	75 A0 FB			mov p2,#11111011b
+ 1228:	  0BF9	12 00 6B			call wait
+ 1229:	  0BFC	75 80 2D			mov p0,#00101101b
+ 1230:	  0BFF	75 A0 FB			mov p2,#11111011b
+ 1231:	  0C02	12 00 6B			call wait
+ 1232:	  0C05	22				ret
+ 1233:	  0C06			loc5:
+ 1234:	  0C06	75 80 10			mov p0,#00010000b	;locrian5,arabian5,
+ 1235:	  0C09	75 A0 EF			mov p2,#11101111b	;101010
+ 1236:	  0C0C	12 00 6B			call wait
+ 1237:	  0C0F	75 80 14			mov p0,#00010100b
+ 1238:	  0C12	75 A0 EF			mov p2,#11101111b
+ 1239:	  0C15	12 00 6B			call wait
+ 1240:	  0C18	75 80 15			mov p0,#00010101b
+ 1241:	  0C1B	75 A0 EF			mov p2,#11101111b
+ 1242:	  0C1E	12 00 6B			call wait
+ 1243:	  0C21	22				ret
+ 1244:	  0C22			loc6:
+ 1245:	  0C22	75 80 20			mov p0,#00100000b	;locrian6,phrygian6,neapolitan major6,neapolitan minor6
+ 1246:	  0C25	75 A0 DF			mov p2,#11011111b	;101011
+ 1247:	  0C28	12 00 6B			call wait
+ 1248:	  0C2B	75 80 30			mov p0,#00110000b
+ 1249:	  0C2E	75 A0 DF			mov p2,#11011111b
+ 1250:	  0C31	12 00 6B			call wait
+ 1251:	  0C34	75 80 34			mov p0,#00110100b
+ 1252:	  0C37	75 A0 DF			mov p2,#11011111b
+ 1253:	  0C3A	12 00 6B			call wait
+ 1254:	  0C3D	75 80 35			mov p0,#00110101b
+ 1255:	  0C40	75 A0 DF			mov p2,#11011111b
+ 1256:	  0C43	12 00 6B			call wait
+ 1257:	  0C46	22				ret
+ 1258:	  0C47			lyd1:
+ 1259:	  0C47	75 80 20			mov p0,#00100000b	;lydian1,pentatonic major1
+ 1260:	  0C4A	75 A0 FE			mov p2,#11111110b	;010101
+ 1261:	  0C4D	12 00 6B			call wait
+ 1262:	  0C50	75 80 28			mov p0,#00101000b
+ 1263:	  0C53	75 A0 FE			mov p2,#11111110b
+ 1264:	  0C56	12 00 6B			call wait
+ 1265:	  0C59	75 80 2A			mov p0,#00101010b
+ 1266:	  0C5C	75 A0 FE			mov p2,#11111110b
+ 1267:	  0C5F	12 00 6B			call wait
+ 1268:	  0C62	22				ret
+ 1269:	  0C63			lyd6:
+ 1270:	  0C63	75 80 20			mov p0,#00100000b	;lydian6,major6,pentatonic major6
+ 1271:	  0C66	75 A0 DF			mov p2,#11011111b	;010101
+ 1272:	  0C69	12 00 6B			call wait
+ 1273:	  0C6C	75 80 28			mov p0,#00101000b
+ 1274:	  0C6F	75 A0 DF			mov p2,#11011111b
+ 1275:	  0C72	12 00 6B			call wait
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 24
+
+
+
+ Line  I  Addr  Code            Source
+
+ 1276:	  0C75	75 80 2A			mov p0,#00101010b
+ 1277:	  0C78	75 A0 DF			mov p2,#11011111b
+ 1278:	  0C7B	12 00 6B			call wait
+ 1279:	  0C7E	22				ret
+ 1280:	  0C7F			mix3:
+ 1281:	  0C7F	75 80 20			mov p0,#00100000b	;mixolydian3,arabian3
+ 1282:	  0C82	75 A0 FB			mov p2,#11111011b	;010101
+ 1283:	  0C85	12 00 6B			call wait
+ 1284:	  0C88	75 80 28			mov p0,#00101000b
+ 1285:	  0C8B	75 A0 FB			mov p2,#11111011b
+ 1286:	  0C8E	12 00 6B			call wait
+ 1287:	  0C91	75 80 2A			mov p0,#00101010b
+ 1288:	  0C94	75 A0 FB			mov p2,#11111011b
+ 1289:	  0C97	12 00 6B			call wait
+ 1290:	  0C9A	22				ret
+ 1291:	  0C9B			neamin2:
+ 1292:	  0C9B	75 80 20			mov p0,#00100000b	;phrygian2,aeolian2,minor2,neapolitan minor2+1,augmented 2+1
+				+6
+ 1293:	  0C9E	75 A0 FD			mov p2,#11111101b	;101101
+ 1294:	  0CA1	12 00 6B			call wait
+ 1295:	  0CA4	75 80 28			mov p0,#00101000b
+ 1296:	  0CA7	75 A0 FD			mov p2,#11111101b
+ 1297:	  0CAA	12 00 6B			call wait
+ 1298:	  0CAD	75 80 2C			mov p0,#00101100b
+ 1299:	  0CB0	75 A0 FD			mov p2,#11111101b
+ 1300:	  0CB3	12 00 6B			call wait
+ 1301:	  0CB6	22				ret
+ 1302:	  0CB7			neamin3:
+ 1303:	  0CB7	75 80 10			mov p0,#00010000b	;neapolitan major3,neapolitan minor3
+ 1304:	  0CBA	75 A0 FB			mov p2,#11111011b	;101110
+ 1305:	  0CBD	12 00 6B			call wait
+ 1306:	  0CC0	75 80 18			mov p0,#00011000b
+ 1307:	  0CC3	75 A0 FB			mov p2,#11111011b
+ 1308:	  0CC6	12 00 6B			call wait
+ 1309:	  0CC9	75 80 1C			mov p0,#00011100b
+ 1310:	  0CCC	75 A0 FB			mov p2,#11111011b
+ 1311:	  0CCF	12 00 6B			call wait
+ 1312:	  0CD2	75 80 1D			mov p0,#00011101b
+ 1313:	  0CD5	75 A0 FB			mov p2,#11111011b
+ 1314:	  0CD8	12 00 6B			call wait
+ 1315:	  0CDB	22				ret
+ 1316:	  0CDC			neamin5:
+ 1317:	  0CDC	75 80 20			mov p0,#00100000b	;neapolitan minor5,augmented5
+ 1318:	  0CDF	75 A0 EF			mov p2,#11101111b	;110011
+ 1319:	  0CE2	12 00 6B			call wait
+ 1320:	  0CE5	75 80 30			mov p0,#00110000b
+ 1321:	  0CE8	75 A0 EF			mov p2,#11101111b
+ 1322:	  0CEB	12 00 6B			call wait
+ 1323:	  0CEE	75 80 32			mov p0,#00110010b
+ 1324:	  0CF1	75 A0 EF			mov p2,#11101111b
+ 1325:	  0CF4	12 00 6B			call wait
+ 1326:	  0CF7	75 80 33			mov p0,#00110011b
+ 1327:	  0CFA	75 A0 EF			mov p2,#11101111b
+ 1328:	  0CFD	12 00 6B			call wait
+ 1329:	  0D00	22				ret
+ 1330:	  0D01			phry2:
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 25
+
+
+
+ Line  I  Addr  Code            Source
+
+ 1331:	  0D01	91 9B				call neamin2
+ 1332:	  0D03	75 80 2D			mov p0,#00101101b
+ 1333:	  0D06	75 A0 FD			mov p2,#11111101b
+ 1334:	  0D09	12 00 6B			call wait
+ 1335:	  0D0C	22				ret
+ 1336:	  0D0D			phry4:
+ 1337:	  0D0D	75 80 20			mov p0,#00100000b	;phrygian4,aeolian4,minor4,(dorian4,pentatonic minor4,melodi
+				c4,neapolitan major4)+1
+ 1338:	  0D10	75 A0 F7			mov p2,#11110111b	;110101
+ 1339:	  0D13	12 00 6B			call wait
+ 1340:	  0D16	75 80 28			mov p0,#00101000b
+ 1341:	  0D19	75 A0 F7			mov p2,#11110111b
+ 1342:	  0D1C	12 00 6B			call wait
+ 1343:	  0D1F	75 80 2A			mov p0,#00101010b
+ 1344:	  0D22	75 A0 F7			mov p2,#11110111b
+ 1345:	  0D25	12 00 6B			call wait
+ 1346:	  0D28	75 80 2B			mov p0,#00101011b
+ 1347:	  0D2B	75 A0 F7			mov p2,#11110111b
+ 1348:	  0D2E	12 00 6B			call wait
+ 1349:	  0D31	22				ret
+ 1350:	  0D32			phry5:
+ 1351:	  0D32	75 80 20			mov p0,#00100000b	;phrygian5,aeolian5,minor5,(locrian5,arabian5)+6
+ 1352:	  0D35	75 A0 EF			mov p2,#11101111b	;101011
+ 1353:	  0D38	12 00 6B			call wait
+ 1354:	  0D3B	75 80 30			mov p0,#00110000b
+ 1355:	  0D3E	75 A0 EF			mov p2,#11101111b
+ 1356:	  0D41	12 00 6B			call wait
+ 1357:	  0D44	75 80 34			mov p0,#00110100b
+ 1358:	  0D47	75 A0 EF			mov p2,#11101111b
+ 1359:	  0D4A	12 00 6B			call wait
+ 1360:	  0D4D	75 80 35			mov p0,#00110101b
+ 1361:	  0D50	75 A0 EF			mov p2,#11101111b
+ 1362:	  0D53	12 00 6B			call wait
+ 1363:	  0D56	22				ret
+ 1364:				;=====================data LCD============================
+ 1365:	  0D57	20 20 53 45	word:			db '  SELECT SCALE  '
+	  0D5B	4C 45 43 54
+	  0D5F	20 53 43 41
+	  0D63	4C 45 20 20
+ 1366:	  0D67	20 20 53 45	word2:			db '  SELECT TEMPO  '
+	  0D6B	4C 45 43 54
+	  0D6F	20 54 45 4D
+	  0D73	50 4F 20 20
+ 1367:	  0D77	20 20 20 20	word3:			db '     Aeolian    '
+	  0D7B	20 41 65 6F
+	  0D7F	6C 69 61 6E
+	  0D83	20 20 20 20
+ 1368:	  0D87	20 20 20 20	word4:			db '     Arabian    '
+	  0D8B	20 41 72 61
+	  0D8F	62 69 61 6E
+	  0D93	20 20 20 20
+ 1369:	  0D97	20 41 72 70	word5:			db ' Arpeggio Major '
+	  0D9B	65 67 67 69
+	  0D9F	6F 20 4D 61
+	  0DA3	6A 6F 72 20
+ 1370:	  0DA7	20 41 72 70	word6:			db ' Arpeggio Minor '
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 26
+
+
+
+ Line  I  Addr  Code            Source
+
+	  0DAB	65 67 67 69
+	  0DAF	6F 20 4D 69
+	  0DB3	6E 6F 72 20
+ 1371:	  0DB7	20 20 20 20	word7:			db '    Augmented   '
+	  0DBB	41 75 67 6D
+	  0DBF	65 6E 74 65
+	  0DC3	64 20 20 20
+ 1372:	  0DC7	20 20 20 20	word8:			db '     Be-Bop     '
+	  0DCB	20 42 65 2D
+	  0DCF	42 6F 70 20
+	  0DD3	20 20 20 20
+ 1373:	  0DD7	20 20 20 42	word9:			db '   Blues Major  '
+	  0DDB	6C 75 65 73
+	  0DDF	20 4D 61 6A
+	  0DE3	6F 72 20 20
+ 1374:	  0DE7	20 20 20 42	word10:			db '   Blues Minor  '
+	  0DEB	6C 75 65 73
+	  0DEF	20 4D 69 6E
+	  0DF3	6F 72 20 20
+ 1375:	  0DF7	20 20 20 20	word11:			db '    Chromatic   '
+	  0DFB	43 68 72 6F
+	  0DFF	6D 61 74 69
+	  0E03	63 20 20 20
+ 1376:	  0E07	20 20 44 69	word12:			db '  Dim Arpeggio  '
+	  0E0B	6D 20 41 72
+	  0E0F	70 65 67 67
+	  0E13	69 6F 20 20
+ 1377:	  0E17	20 20 20 20	word13:			db '     Dorian     '
+	  0E1B	20 44 6F 72
+	  0E1F	69 61 6E 20
+	  0E23	20 20 20 20
+ 1378:	  0E27	20 48 61 72	word14:			db ' Harmonic Minor '
+	  0E2B	6D 6F 6E 69
+	  0E2F	63 20 4D 69
+	  0E33	6E 6F 72 20
+ 1379:	  0E37	20 20 20 20	word15:			db '     Ionian     '
+	  0E3B	20 49 6F 6E
+	  0E3F	69 61 6E 20
+	  0E43	20 20 20 20
+ 1380:	  0E47	20 20 20 20	word16:			db '     Locrian    '
+	  0E4B	20 4C 6F 63
+	  0E4F	72 69 61 6E
+	  0E53	20 20 20 20
+ 1381:	  0E57	20 20 20 20	word17:			db '     Lydian     '
+	  0E5B	20 4C 79 64
+	  0E5F	69 61 6E 20
+	  0E63	20 20 20 20
+ 1382:	  0E67	20 20 20 20	word18:			db '      Major     '
+	  0E6B	20 20 4D 61
+	  0E6F	6A 6F 72 20
+	  0E73	20 20 20 20
+ 1383:	  0E77	20 20 20 20	word19:			db '      Minor     '
+	  0E7B	20 20 4D 69
+	  0E7F	6E 6F 72 20
+	  0E83	20 20 20 20
+ 1384:	  0E87	4D 65 6C 6F	word20:			db 'Melodic/Jazz min'
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 27
+
+
+
+ Line  I  Addr  Code            Source
+
+	  0E8B	64 69 63 2F
+	  0E8F	4A 61 7A 7A
+	  0E93	20 6D 69 6E
+ 1385:	  0E97	20 20 20 4D	word21:			db '   Mixolydian   '
+	  0E9B	69 78 6F 6C
+	  0E9F	79 64 69 61
+	  0EA3	6E 20 20 20
+ 1386:	  0EA7	4E 65 61 70	word22:			db 'Neapolitan Major'
+	  0EAB	6F 6C 69 74
+	  0EAF	61 6E 20 4D
+	  0EB3	61 6A 6F 72
+ 1387:	  0EB7	4E 65 61 70	word23:			db 'Neapolitan Minor'
+	  0EBB	6F 6C 69 74
+	  0EBF	61 6E 20 4D
+	  0EC3	69 6E 6F 72
+ 1388:	  0EC7	50 65 6E 74	word24:			db 'Pentatonic Major'
+	  0ECB	61 74 6F 6E
+	  0ECF	69 63 20 4D
+	  0ED3	61 6A 6F 72
+ 1389:	  0ED7	50 65 6E 74	word25:			db 'Pentatonic Minor'
+	  0EDB	61 74 6F 6E
+	  0EDF	69 63 20 4D
+	  0EE3	69 6E 6F 72
+ 1390:	  0EE7	20 20 20 50	word26:			db '   Phyrigian    '
+	  0EEB	68 79 72 69
+	  0EEF	67 69 61 6E
+	  0EF3	20 20 20 20
+ 1391:	  0EF7	20 20 20 54	word27:			db '   TEMPO: 80    '
+	  0EFB	45 4D 50 4F
+	  0EFF	3A 20 38 30
+	  0F03	20 20 20 20
+ 1392:	  0F07	20 20 20 54	word28:			db '   TEMPO: 100   '
+	  0F0B	45 4D 50 4F
+	  0F0F	3A 20 31 30
+	  0F13	30 20 20 20
+ 1393:	  0F17	20 20 20 54	word29:			db '   TEMPO: 120   '
+	  0F1B	45 4D 50 4F
+	  0F1F	3A 20 31 32
+	  0F23	30 20 20 20
+ 1394:	  0F27	20 20 20 54	word30:			db '   TEMPO: 140   '
+	  0F2B	45 4D 50 4F
+	  0F2F	3A 20 31 34
+	  0F33	30 20 20 20
+ 1395:	  0F37	20 43 48 4F	word_tekan:		db ' CHOOSE SCALE!! '
+	  0F3B	4F 53 45 20
+	  0F3F	53 43 41 4C
+	  0F43	45 21 21 20
+ 1396:	  0F47	20 43 48 4F	word_tekan2:		db ' CHOOSE TEMPO!! '
+	  0F4B	4F 53 45 20
+	  0F4F	54 45 4D 50
+	  0F53	4F 21 21 20
+ 1397:	  0F57	20 43 48 4F	word_tekan3:		db ' CHOOSE FIRST!! '
+	  0F5B	4F 53 45 20
+	  0F5F	46 49 52 53
+	  0F63	54 21 21 20
+ 1398:	  0F67			word_tekan4:		db ''
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 28
+
+
+
+ Line  I  Addr  Code            Source
+
+ 1399:				end
+
+
+
+
+
+                     register banks used:  ---
+
+                     no errors
+
+
+
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 29
+
+
+
+
+
+	       L I S T   O F   S Y M B O L S
+	       =============================
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+??ASEM_51			  NUMBER    8051
+??VERSION			  NUMBER    0130
+AC				  BIT	      D6
+ACC				  DATA	      E0
+AOELIAN				  CODE	    0142	 172
+ARABIAN				  CODE	    0160	 183
+ARABIAN5			  CODE	    08A8	 894
+ARPEGGIO_MAJOR3			  CODE	    08C4	 905
+ARPEGGIO_MINOR1			  CODE	    08CE	 910
+ARPEGGIO_MINOR2			  CODE	    08E1	 918
+ARPEGGIO_MINOR3			  CODE	    08EB	 923
+ARPEGGIO_MINOR5			  CODE	    08FE	 931
+ARPEGGIO_MINOR6			  CODE	    0911	 939
+ARPMAJ				  CODE	    019B	 205
+ARPMIN				  CODE	    01E0	 231
+AUGMENTED			  CODE	    0213	 250
+B				  DATA	      F0
+BALIK				  CODE	    00E9	 130
+BENTAR				  CODE	    009D	  97
+BENTAR1				  CODE	    00A6	 100
+BENTAR2				  CODE	    00A9	 101
+BE_BOP				  CODE	    0285	 295
+BLUEMAJ				  CODE	    02E5	 332
+BLUEMIN				  CODE	    0318	 352
+BLUMAJ1				  CODE	    0924	 947
+BLUMAJ2				  CODE	    0940	 958
+BLUMAJ3				  CODE	    0965	 972
+BLUMAJ4				  CODE	    0978	 980
+BLUMAJ6				  CODE	    099D	 994
+CETAK				  CODE	    0778	 782
+CHROM				  CODE	    0356	 376
+CHROM1				  CODE	    09B9	1005
+CHROM2				  CODE	    09C0	1008
+CHROM3				  CODE	    09C7	1011
+CHROM4				  CODE	    09CE	1014
+CHROM5				  CODE	    09D5	1017
+CHROM6				  CODE	    09DC	1020
+CY				  BIT	      D7
+DEL1				  NUMBER    0037	  13
+DEL2				  NUMBER    0038	  14
+DEL3				  NUMBER    0039	  15
+DELAY				  CODE	    005E	  70
+DELAY1				  CODE	    0061	  72
+DIMARP				  CODE	    043D	 454
+DOR1				  CODE	    09E3	1023
+DOR2				  CODE	    0A08	1037
+DOR3				  CODE	    0A2D	1051
+DOR4				  CODE	    0A52	1066
+DOR5				  CODE	    0A6E	1077
+DOR6				  CODE	    0A93	1091
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 30
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+DORIAN				  CODE	    0482	 481
+DPH				  DATA	      83
+DPL				  DATA	      82
+EA				  BIT	      AF
+ES				  BIT	      AC
+ET0				  BIT	      A9
+ET1				  BIT	      AB
+EX0				  BIT	      A8
+EX1				  BIT	      AA
+EXTI0				  CODE	    0003
+EXTI1				  CODE	    0013
+F0				  BIT	      D5
+HARMIN				  CODE	    04A0	 493
+HARMONIC_MINOR3			  CODE	    0AB8	1105
+HEULA				  CODE	    00B6	 107
+HEULA1				  CODE	    00BF	 110
+HEULA2				  CODE	    00C2	 111
+IE				  DATA	      A8
+IE0				  BIT	      89
+IE1				  BIT	      8B
+INIT_LCD			  CODE	    0031	  46
+INT0				  BIT	      B2
+INT1				  BIT	      B3
+ION1				  CODE	    0AD4	1116
+ION2				  CODE	    0AF9	1130
+ION3				  CODE	    0B15	1141
+ION4				  CODE	    0B31	1152
+ION5				  CODE	    0B4D	1163
+ION6				  CODE	    0B72	1177
+IONIAN				  CODE	    051A	 543
+IP				  DATA	      B8
+IT0				  BIT	      88
+IT1				  BIT	      8A
+JALAN1				  CODE	    013C	 169
+JALAN10				  CODE	    0437	 451
+JALAN11				  CODE	    047C	 478
+JALAN12				  CODE	    049A	 490
+JALAN13				  CODE	    0514	 540
+JALAN14				  CODE	    0532	 552
+JALAN15				  CODE	    056D	 575
+JALAN16				  CODE	    05B5	 603
+JALAN17				  CODE	    05E8	 622
+JALAN18				  CODE	    0606	 633
+JALAN19				  CODE	    062C	 648
+JALAN2				  CODE	    015A	 180
+JALAN20				  CODE	    064A	 659
+JALAN21				  CODE	    0668	 670
+JALAN22				  CODE	    068E	 684
+JALAN23				  CODE	    06E0	 718
+JALAN24				  CODE	    074A	 761
+JALAN25				  CODE	    0768	 773
+JALAN3				  CODE	    0195	 202
+JALAN4				  CODE	    01DA	 228
+JALAN5				  CODE	    020D	 247
+JALAN6				  CODE	    027F	 292
+JALAN7				  CODE	    02DF	 329
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 31
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+JALAN8				  CODE	    0312	 349
+JALAN9				  CODE	    0350	 373
+LOC1				  CODE	    0B97	1191
+LOC2				  CODE	    0BBC	1205
+LOC3				  CODE	    0BE1	1219
+LOC5				  CODE	    0C06	1233
+LOC6				  CODE	    0C22	1244
+LOCRIAN				  CODE	    0538	 555
+LONCAT				  CODE	    0434	 450
+LYD1				  CODE	    0C47	1258
+LYD6				  CODE	    0C63	1269
+LYDIAN				  CODE	    0573	 578
+MAJOR				  CODE	    05BB	 606
+MELODIC				  CODE	    060C	 636
+MINOR				  CODE	    05EE	 625
+MIX3				  CODE	    0C7F	1280
+MIXO				  CODE	    0632	 651
+NAIK				  CODE	    00E3	 126
+NEAMAJ				  CODE	    0650	 662
+NEAMIN				  CODE	    066E	 673
+NEAMIN2				  CODE	    0C9B	1291
+NEAMIN3				  CODE	    0CB7	1302
+NEAMIN5				  CODE	    0CDC	1316
+NYALA_AWAL			  CODE	    089B	 888
+OV				  BIT	      D2
+P				  BIT	      D0
+P0				  DATA	      80
+P1				  DATA	      90
+P2				  DATA	      A0
+P3				  DATA	      B0
+PCON				  DATA	      87
+PENMAJ				  CODE	    0694	 687
+PENMIN				  CODE	    06E6	 721
+PHRY2				  CODE	    0D01	1330
+PHRY4				  CODE	    0D0D	1336
+PHRY5				  CODE	    0D32	1350
+PHRYGIAN			  CODE	    0750	 764
+PINE				  BIT	      B1	  17
+PINRS				  BIT	      B0	  16
+PRINT				  CODE	    0867	 867
+PS				  BIT	      BC
+PSW				  DATA	      D0
+PT0				  BIT	      B9
+PT1				  BIT	      BB
+PX0				  BIT	      B8
+PX1				  BIT	      BA
+RB8				  BIT	      9A
+RD				  BIT	      B7
+REN				  BIT	      9C
+RESET				  CODE	    0000
+RI				  BIT	      98
+RS0				  BIT	      D3
+RS1				  BIT	      D4
+RST				  CODE	    00E6	 128
+RXD				  BIT	      B0
+SALAH				  CODE	    00F3	 135
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 32
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+SALAH1				  CODE	    0101	 141
+SALAH2				  CODE	    0111	 148
+SALAH3				  CODE	    011E	 154
+SBUF				  DATA	      99
+SCON				  DATA	      98
+SINT				  CODE	    0023
+SM0				  BIT	      9F
+SM1				  BIT	      9E
+SM2				  BIT	      9D
+SP				  DATA	      81
+START				  CODE	    0003	  22
+T0				  BIT	      B4
+T1				  BIT	      B5
+TB8				  BIT	      9B
+TCON				  DATA	      88
+TEKAN				  CODE	    00CF	 117
+TEMP				  CODE	    00E0	 124
+TEMPO				  CODE	    0859	 862
+TEMPO2				  CODE	    0875	 873
+TEMPO3				  CODE	    0880	 877
+TEMPO4				  CODE	    088B	 881
+TEMPO5				  CODE	    0896	 885
+TF0				  BIT	      8D
+TF1				  BIT	      8F
+TG1001				  NUMBER    0028	   4
+TG1002				  NUMBER    0029	   5
+TG1003				  NUMBER    0030	   6
+TG1201				  NUMBER    0031	   7
+TG1202				  NUMBER    0032	   8
+TG1203				  NUMBER    0033	   9
+TG1401				  NUMBER    0034	  10
+TG1402				  NUMBER    0035	  11
+TG1403				  NUMBER    0036	  12
+TG801				  NUMBER    0025	   1
+TG802				  NUMBER    0026	   2
+TG803				  NUMBER    0027	   3
+TH0				  DATA	      8C
+TH1				  DATA	      8D
+TI				  BIT	      99
+TIMER0				  CODE	    000B
+TIMER1				  CODE	    001B
+TL0				  DATA	      8A
+TL1				  DATA	      8B
+TMOD				  DATA	      89
+TR0				  BIT	      8C
+TR1				  BIT	      8E
+TUNGGU				  CODE	    0084	  87
+TUNGGU1				  CODE	    008D	  90
+TUNGGU2				  CODE	    0090	  91
+TXD				  BIT	      B1
+UP				  CODE	    076D	 777
+UP10				  CODE	    07CD	 814
+UP11				  CODE	    07D6	 817
+UP12				  CODE	    07DF	 820
+UP13				  CODE	    07E8	 823
+UP14				  CODE	    07F1	 826
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 33
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+UP15				  CODE	    07FA	 829
+UP16				  CODE	    0803	 832
+UP17				  CODE	    080C	 835
+UP18				  CODE	    0815	 838
+UP19				  CODE	    081E	 841
+UP2				  CODE	    0785	 790
+UP20				  CODE	    0827	 844
+UP21				  CODE	    0830	 847
+UP22				  CODE	    0839	 850
+UP23				  CODE	    0842	 853
+UP24				  CODE	    084B	 856
+UP25				  CODE	    0854	 859
+UP3				  CODE	    078E	 793
+UP4				  CODE	    0797	 796
+UP5				  CODE	    07A0	 799
+UP6				  CODE	    07A9	 802
+UP7				  CODE	    07B2	 805
+UP8				  CODE	    07BB	 808
+UP9				  CODE	    07C4	 811
+WAIT				  CODE	    006B	  77
+WAIT1				  CODE	    0074	  80
+WAIT2				  CODE	    0077	  81
+WALK				  CODE	    034D	 372
+WORD				  CODE	    0D57	1365
+WORD10				  CODE	    0DE7	1374
+WORD11				  CODE	    0DF7	1375
+WORD12				  CODE	    0E07	1376
+WORD13				  CODE	    0E17	1377
+WORD14				  CODE	    0E27	1378
+WORD15				  CODE	    0E37	1379
+WORD16				  CODE	    0E47	1380
+WORD17				  CODE	    0E57	1381
+WORD18				  CODE	    0E67	1382
+WORD19				  CODE	    0E77	1383
+WORD2				  CODE	    0D67	1366
+WORD20				  CODE	    0E87	1384
+WORD21				  CODE	    0E97	1385
+WORD22				  CODE	    0EA7	1386
+WORD23				  CODE	    0EB7	1387
+WORD24				  CODE	    0EC7	1388
+WORD25				  CODE	    0ED7	1389
+WORD26				  CODE	    0EE7	1390
+WORD27				  CODE	    0EF7	1391
+WORD28				  CODE	    0F07	1392
+WORD29				  CODE	    0F17	1393
+WORD3				  CODE	    0D77	1367
+WORD30				  CODE	    0F27	1394
+WORD4				  CODE	    0D87	1368
+WORD5				  CODE	    0D97	1369
+WORD6				  CODE	    0DA7	1370
+WORD7				  CODE	    0DB7	1371
+WORD8				  CODE	    0DC7	1372
+WORD9				  CODE	    0DD7	1373
+WORD_TEKAN			  CODE	    0F37	1395
+WORD_TEKAN2			  CODE	    0F47	1396
+WORD_TEKAN3			  CODE	    0F57	1397
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 34
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+WORD_TEKAN4			  CODE	    0F67	1398
+WR				  BIT	      B6
+WRITE				  CODE	    0027	  38
+WRITE_DATA			  CODE	    0052	  63
+WRITE_INST			  CODE	    0046	  56
